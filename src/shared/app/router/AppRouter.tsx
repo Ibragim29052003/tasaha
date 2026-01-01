@@ -1,14 +1,17 @@
-import { Route, Routes } from "react-router-dom";
-import { Fragment } from "react/jsx-runtime";
+import { Route, Routes, Navigate } from "react-router-dom";
+import WomenPage from "@/pages/WomenPage";
+import MenPage from "@/pages/MenPage";
+import ChildrenPage from "@/pages/ChildrenPage";
+import AboutPage from "@/pages/AboutPage";
 
 const AppRouter = () => {
   return (
     <Routes>
-      <Route path="/" element={<Fragment />} />
-      {/* <Route path="/" element={<Fragment />} /> */}
-      {/* <Route path="/" element={<Fragment />} /> */}
-
-      {/* <Route path="*" element={<NotFound />} /> */}
+      <Route path="/" element={<Navigate to="/women" replace />} />
+      <Route path="/women" element={<WomenPage />} />
+      <Route path="/men" element={<MenPage />} />
+      <Route path="/children" element={<ChildrenPage />} />
+      <Route path="/about" element={<AboutPage />} />
     </Routes>
   );
 };

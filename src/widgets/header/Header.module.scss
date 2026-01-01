@@ -1,0 +1,238 @@
+@use "../../shared/scss/helpers/" as *;
+
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background-color: var(--color-white);
+  font-family: var(--font-family-CeraPro-Regular);
+  z-index: 1000;
+  box-shadow: var(--box-shadow);
+  border-bottom: rem(1) solid hsl(248deg 39% 53% / 50%);
+
+  &__nav {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding-block: rem(23);
+
+    @include mobile {
+      align-items: center;
+    }
+  }
+
+  &__logo {
+    width: rem(50);
+    height: rem(50);
+    transition: color var(--transition-duration);
+    &_text {
+      font-size: fluid(25, 20);
+      font-weight: bold;
+      font-family: var(--font-family-v_Calligraphic421BT);
+      margin-left: rem(10);
+      color: var(--color-black);
+      transition: color var(--transition-duration);
+    }
+    &_link {
+      @include flex-center;
+      text-decoration: none;
+      @include hover {
+        .header__logo,
+        .header__logo_text {
+          color: var(--color-purple);
+        }
+      }
+    }
+  }
+
+  &__burger {
+    width: rem(22);
+    height: rem(15);
+
+    display: inline-flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 0;
+    color: var(--color-dark-gray);
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+
+    @include hover {
+      color: var(--color-lavender);
+    }
+
+    @include mobile-above {
+      display: none;
+    }
+
+    &_active {
+      .header__burger_lines {
+        &:first-child {
+          rotate: 45deg;
+          transform-origin: 0;
+          translate: 0.25em -0.1em;
+        }
+        &:nth-child(2) {
+          rotate: -45deg;
+        }
+        &:nth-child(3) {
+          width: 0;
+        }
+      }
+    }
+
+    &_lines {
+      width: 100%;
+      height: rem(2);
+      background-color: currentColor;
+      border-radius: 1rem;
+      transition-duration: var(--transition-duration);
+    }
+  }
+
+  &__list {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: var(--color-white);
+    box-shadow: var(--box-shadow);
+    padding: rem(20);
+    list-style: none;
+    margin: 0;
+    opacity: 0;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+
+    &_open {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      gap:  rem(10);
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @include mobile-above {
+      @include flex-center;
+      gap: fluid(32, 10);
+      position: static;
+      box-shadow: none;
+      padding: 0;
+      background: transparent;
+      opacity: 1;
+    }
+
+    &_categories {
+      position: relative;
+      @include mobile {
+        display: none;
+      }
+      @include mobile-above {
+        display: flex;
+      }
+    }
+
+    &_categories_mobile {
+      display: none;
+      position: static;
+      padding-left: rem(20);
+      list-style: none;
+      margin: 0;
+    }
+
+    &_categories_mobile_open {
+      display: block;
+      opacity: 1;
+      transform: translateY(0);
+      animation: slideDown 0.3s ease;
+      border-radius: 1rem;
+      background-color: color-mix(
+        in srgb,
+        var(--color-light-purple) 7%,
+        transparent
+      );
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(rem(-10));
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  }
+
+  &__item {
+    &_categories {
+      font-size: fluid(16, 12);
+    }
+    &_categories_mobile {
+      font-size: fluid(16, 14);
+      margin-bottom: rem(10);
+    }
+    &_services {
+      font-size: fluid(20, 16);
+    }
+  }
+
+  &__link {
+    position: relative;
+    text-decoration: none;
+    color: var(--color-black);
+    display: block;
+    transition-duration: var(--transition-duration);
+
+    &_active {
+      font-weight: bold;
+    }
+
+    &_expandable {
+      @include flex-center;
+      gap: rem(8);
+      background: none;
+      border: none;
+      cursor: pointer;
+      width: 100%;
+      text-align: left;
+      padding: 0;
+    }
+  }
+
+  &__line {
+    position: absolute;
+    bottom: rem(-24);
+    left: 0;
+    height: rem(3);
+    background-color: var(--color-purple);
+    transition: transform 0.3s ease, width 0.3s ease;
+    z-index: -1;
+
+    @include mobile {
+      display: none;
+    }
+  }
+
+  &__arrow {
+    &_down {
+      @include square(rem(15));
+      vertical-align: middle;
+      transition: transform var(--transition-duration);
+      font-size: 0.8em;
+
+      &_expanded {
+        transform: rotate(180deg);
+      }
+    }
+
+    &_text {
+      margin: 0;
+    }
+  }
+}

@@ -1,4 +1,4 @@
-@use 'helpers' as *;
+@use '../../shared/scss/helpers/' as *;
 
 :root {
   /* Основные цвета */
@@ -58,6 +58,10 @@
 
 
   --font-family-v_Calligraphic421BT: 'v_Calligraphic421BT', sans-serif;
+  --font-family-CeraPro-Bold: 'CeraPro-Bold', sans-serif;
+  --font-family-CeraPro-Black: 'CeraPro-Black', sans-serif;
+  --font-family-CeraPro-Medium: 'CeraPro-Medium', sans-serif;
+  --font-family-CeraPro-Regular: 'CeraPro-Regular', sans-serif;
 
   --container-width: #{rem(1250)};
   --container-padding-x: #{rem(30)};
@@ -67,6 +71,8 @@
 
   --transition-duration: 0.2s;
   --transition-duration-05: 0.5s;
+
+  --box-shadow: 0 #{rem(2)} #{rem(4)} rgba(0, 0, 0, 0.1);
 
 
   @include tablet {
