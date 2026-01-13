@@ -1,4 +1,8 @@
 import { Navigate, Route, Routes } from "react-router-dom";
+import WomenPage from "@/pages/women-page/WomenPage";
+import MenPage from "@/pages/men-page/MenPage";
+import ChildrenPage from "@/pages/children-page/ChildrenPage";
+import AboutPage from "@/pages/about-page/AboutPage";
 
 const AppRouter = () => {
   return (

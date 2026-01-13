@@ -1,8 +1,9 @@
-import React from 'react'
+import type { FC } from "react"
+import styles from "./Footer.module.scss"
 
-const Footer = () => {
+const Footer: FC = () => {
   return (
-    <div>Footer</div>
+    <footer className={styles.footer}>Небльшой текст для проверки шрифта</footer>
   )
 }
 
