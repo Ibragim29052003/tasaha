@@ -21,8 +21,8 @@ h4, .h4,
 h5, .h5,
 h6, .h6 {
   color: var(--color-dark-gray);
-  font-family: var(--font-family-poppins);
-  font-weight: 600;
+  font-family: var(--font-family-CeraPro-Regular);
+  font-weight: 400;
 }
 
 
@@ -72,7 +72,7 @@ a {
   color: inherit;
 
   @include hover {
-    color: var(--color-purple);
+    color: var(--color-accent);
   }
 
   &[class] {
