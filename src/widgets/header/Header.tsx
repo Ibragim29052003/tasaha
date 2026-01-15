@@ -11,10 +11,10 @@ const Header: FC = () => {
   const [isCategoriesOpen, setIsCategoriesOpen] = useState(false);
 
   const listRef = useRef<HTMLUListElement>(null);
-  const divRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   type NavItem = {
-    link: string;
+    link?: string;
     text: string;
   };
 
@@ -25,7 +25,7 @@ const Header: FC = () => {
   ];
 
   const navItems: NavItem[] = [
-    { link: "/", text: "Главная" },
+    { text: "Главная" },
     { link: "/about", text: "О нас" },
   ];
 
@@ -41,8 +41,8 @@ const Header: FC = () => {
       if (
         listRef.current &&
         !listRef.current.contains(event.target as Node) && // если был клик вне списка
-        divRef.current &&
-        !divRef.current.contains(event.target as Node) // если был клик вне кнопки
+        buttonRef.current &&
+        !buttonRef.current.contains(event.target as Node) // если был клик вне кнопки
       ) {
         setIsCategoriesOpen(false);
       }
@@ -69,7 +69,7 @@ const Header: FC = () => {
 
   return (
     <header className={`${styles.header} container`}>
-      <nav className={styles.header__nav}  role="navigation">
+      <nav className={styles.header__nav} role="navigation">
         <div className={styles.header__logo_wrapper}>
           <Link to="/" aria-label="Вернуться на главную страницу">
             <Logo className={styles.header__logo_logo} />
@@ -79,41 +79,41 @@ const Header: FC = () => {
         <ul className={styles.header__list}>
           {navItems.map((item, index) => (
             <li key={index} className={styles.header__list_item}>
-              <Link
-                to={item.link}
-                className={styles.header__list_link}
-                aria-label={`Перейти к странице ${item.text}`}
-                onClick={(e) => {
-                  if (item.text === "Главная") e.preventDefault();
-                }} // для предотвращения навигации при toggle
-              >
-                {item.text === "Главная" ? (
-                  <div
-                    className={styles.header__expandable_wrapper}
-                    ref={divRef}
-                  >
-                    <button
-                      className={styles.header__expandable}
-                      onClick={() => setIsCategoriesOpen(!isCategoriesOpen)}
-                      aria-expanded={isCategoriesOpen}
-                      aria-controls="categories-list"
-                      aria-haspopup="menu" // указывает, что кнопка открывает меню
-                    >
-                      {item.text}
-                      <Arrow
-                        className={`${styles.header__expandable_icon} ${
-                          isCategoriesOpen
-                            ? styles.header__expandable_icon_open
-                            : ""
-                        } `}
-                      />
-                    </button>
-                    <DropdownMenu ref={listRef} isOpen={isCategoriesOpen} categories={categories}/>
-                  </div>
-                ) : (
-                  item.text
-                )}
-              </Link>
+              {item.text === "Главная" ? (
+                <button
+                  className={styles.header__expandable}
+                  onClick={() => setIsCategoriesOpen(!isCategoriesOpen)}
+                  aria-expanded={isCategoriesOpen}
+                  aria-controls="categories-list"
+                  aria-haspopup="menu" // указывает, что кнопка открывает меню
+                  ref={buttonRef}
+                >
+                  {item.text}
+                  <Arrow
+                    className={`${styles.header__expandable_icon} ${
+                      isCategoriesOpen
+                        ? styles.header__expandable_icon_open
+                        : ""
+                    } `}
+                  />
+                </button>
+              ) : (
+                <Link
+                  to={item.link || "#"}
+                  className={styles.header__list_link}
+                  aria-label={`Перейти к странице ${item.text}`}
+                >
+                  {item.text}
+                </Link>
+              )}
+              {item.text === "Главная" && (
+                <DropdownMenu
+                  ref={listRef}
+                  isOpen={isCategoriesOpen}
+                  categories={categories}
+                  onClose={() => setIsCategoriesOpen(false)}
+                />
+              )}
             </li>
           ))}
         </ul>
