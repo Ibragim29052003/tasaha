@@ -8,8 +8,10 @@ import { Link } from "react-router-dom";
 import DropdownMenu from "./DropdownMenu";
 
 const Header: FC = () => {
+  const [menuOpen, setMenuOpen] = useState(false);
   const [isCategoriesOpen, setIsCategoriesOpen] = useState(false);
 
+  const burgerRef = useRef<HTMLButtonElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
@@ -30,11 +32,12 @@ const Header: FC = () => {
   ];
 
   useEffect(() => {
-    if (!isCategoriesOpen) return;
+    if (!isCategoriesOpen || !menuOpen) return;
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         setIsCategoriesOpen(false);
+        setMenuOpen(false);
       }
     };
     const handleClickOutside = (event: MouseEvent) => {
@@ -42,9 +45,12 @@ const Header: FC = () => {
         listRef.current &&
         !listRef.current.contains(event.target as Node) && // если был клик вне списка
         buttonRef.current &&
-        !buttonRef.current.contains(event.target as Node) // если был клик вне кнопки
+        !buttonRef.current.contains(event.target as Node) && // если был клик вне кнопки
+        burgerRef.current &&
+        !burgerRef.current.contains(event.target as Node) // если был клик вне бургера
       ) {
         setIsCategoriesOpen(false);
+        setMenuOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside); // слушаем клики по всему документу
@@ -53,7 +59,7 @@ const Header: FC = () => {
       document.removeEventListener("mousedown", handleClickOutside); // функция очистки, выполнится при размонтировании или изменении isCategoriesOpen
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [isCategoriesOpen]);
+  }, [isCategoriesOpen, menuOpen]);
 
   useEffect(() => {
     if (isCategoriesOpen) {
@@ -70,13 +76,16 @@ const Header: FC = () => {
   return (
     <header className={`${styles.header} container`}>
       <nav className={styles.header__nav} role="navigation">
-        <div className={styles.header__logo_wrapper}>
-          <Link to="/" aria-label="Вернуться на главную страницу">
-            <Logo className={styles.header__logo_logo} />
-            <p className={styles.header__logo_text}>TaSaHa</p>
-          </Link>
-        </div>
-        <ul className={styles.header__list}>
+        <Link
+          to="/"
+          aria-label="Вернуться на главную страницу"
+          className={styles.header__logo}
+        >
+          <Logo className={styles.header__logo_logo} />
+          <p className={styles.header__logo_text}>TaSaHa</p>
+        </Link>
+
+        <ul className={`${styles.header__list} ${menuOpen ? styles.header__list_open : ''}`}>
           {navItems.map((item, index) => (
             <li key={index} className={styles.header__list_item}>
               {item.text === "Главная" ? (
@@ -126,7 +135,7 @@ const Header: FC = () => {
             href="https://www.wildberries.ru/brands/310895408-tasaha"
             target="_blank"
             rel="noopener noreferrer"
-            className={styles.header__wb}
+            className={`${styles.header__wb} ${menuOpen ? styles.header__wb_open : ''}`}
           >
             <TransitionWB
               className={styles.header__wb_icon}
@@ -135,6 +144,20 @@ const Header: FC = () => {
             <p className={styles.header__wb_text}>Перейти на WB</p>
           </a>
         </div>
+
+        <button
+          className={`${styles.header__burger} ${
+            menuOpen ? styles.header__burger_open : ""
+          }`}
+          onClick={() => setMenuOpen(!menuOpen)}
+          aria-label={menuOpen ? 'Закрыть меню' : 'Открыть меню'}
+          aria-expanded={menuOpen}
+          ref={burgerRef}
+        >
+          <span className={styles.header__burger_line}></span>
+          <span className={styles.header__burger_line}></span>
+          <span className={styles.header__burger_line}></span>
+        </button>
       </nav>
     </header>
   );

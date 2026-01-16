@@ -4,8 +4,10 @@ import styles from './ChildrenPage.module.scss'
 
 const ChildrenPage: FC = () => {
   return (
-    <div className={styles.container}>
+    <div className={styles.container} style={{padding: '8rem'}}> 
+
         <p>     </p>
+
       <p>.   </p>
       <p>.  </p>
       <h1>Главная страница для детей</h1>

@@ -1,1 +1,216 @@
 @use "../../shared/scss/helpers/" as *;
+
+.header {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  font-family: var(--font-family-CeraPro-Regular);
+
+  &__nav {
+    @include flex-center;
+    justify-content: space-between;
+    padding-block: rem(25) rem(1);
+    border-bottom: 0.3px solid var(--color-light-gray);
+  }
+
+  &__logo {
+    @include flex-center;
+    gap: rem(12);
+    color: var(--color-black);
+
+    &_text {
+      font-size: fluid(26, 20);
+      font-family: var(--font-family-v_Calligraphic421BT);
+      transition: color var(--transition-duration);
+      font-weight: 700;
+    }
+
+    &_logo {
+      transition: color var(--transition-duration);
+      filter: drop-shadow(0 0 0.3px black);
+    }
+    @include mobile {
+      &_logo {
+        width: rem(50);
+        height: rem(50);
+      }
+    }
+
+    @include hover {
+      .header__logo_text,
+      .header__logo_logo {
+        color: var(--color-accent);
+      }
+    }
+  }
+
+  &__list {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: var(--color-white);
+    box-shadow: var(--box-shadow);
+    padding: rem(20);
+    list-style: none;
+    margin: 0;
+    opacity: 0;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+
+    &_open {
+      @include flex-center;
+      flex-direction: column;
+      gap: rem(20);
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @include mobile-above {
+      position: static;
+      @include flex-center;
+      gap: fluid(50, 30);
+      color: var(--color-ml-gray);
+      opacity: 1;
+      box-shadow: none;
+      
+      &_item {
+        font-size: fluid(18, 16);
+        transition: color var(--transition-duration);
+      }
+
+      &_link {
+        @include hover {
+          color: var(--color-black);
+          font-weight: 700;
+        }
+      }
+      &_open {
+        display: none;
+      }
+    }
+  }
+
+  &__expandable {
+    @include flex-center;
+    gap: rem(5);
+    border: none;
+    background-color: transparent;
+    color: var(--color-ml-gray);
+    @include hover {
+      color: var(--color-black);
+      font-weight: 700;
+    }
+
+    &_icon {
+      transition-duration: var(--transition-duration-05);
+
+      &_open {
+        transform: rotate(180deg);
+      }
+    }
+
+    @include hover {
+      .header__expandable_icon path {
+        transition: color var(--transition-duration);
+        stroke-width: 2;
+      }
+    }
+  }
+
+  &__categories_list {
+    position: absolute;
+    bottom: -100%;
+    background-color: var(--color-white);
+    padding: rem(10) rem(15);
+    border: rem(1) solid var(--color-light-gray);
+    border-radius: 1rem;
+  }
+
+  &__search {
+    display: none;
+    @include mobile-above {
+      display: block;
+    }
+  }
+
+  &__wb {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    gap: rem(4);
+    padding: rem(7) rem(17);
+    border-radius: rem(6);
+    color: var(--color-white);
+    background-color: var(--color-accent);
+
+    @include hover {
+      color: var(--color-black);
+    }
+
+    &_open {
+      @include flex-center;
+    }
+
+    @include mobile-above {
+      position: static;
+      @include flex-center;
+
+      &_search_wrapper {
+        @include flex-center;
+        gap: fluid(30, 24);
+      }
+
+      &_open {
+        display: none;
+      }
+    }
+  }
+
+  &__burger {
+    width: rem(22);
+    height: rem(15);
+    display: inline-flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 0;
+    color: var(--color-black);
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+
+    @include hover {
+      color: var(--color-accent);
+    }
+
+    @include mobile-above {
+      display: none;
+    }
+
+    &_open {
+      .header__burger_line {
+        &:first-child {
+          rotate: 45deg;
+          transform-origin: 0;
+          translate: 0.25em -0.1em;
+        }
+        &:nth-child(2) {
+          rotate: -45deg;
+        }
+
+        &:nth-child(3) {
+          width: 0;
+        }
+      }
+    }
+    &_line {
+      width: 100%;
+      height: rem(2);
+      background-color: currentColor;
+      border-radius: 1rem;
+      transition-duration: var(--transition-duration);
+    }
+  }
+}

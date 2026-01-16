@@ -4,13 +4,13 @@
   /* Основные цвета */
   --color-black: #000000;
   --color-white: #FFFFFF;
-  --color-accent: #b823c5;
+  --color-accent: #665AB5;
 
   /* Серые */
   --color-dark-gray: #151515;
   --color-gray: #3E3E3E;
   --color-medium-gray: #606060;
-  --color-ml-gray: #7f7e7e;
+  --color-ml-gray: #3D3D3D;
   --color-light-gray: #CBCBCB;
   --color-dark-el-gray: #EAEAEA;
   --color-el-gray: #FAFAFA;
@@ -69,8 +69,8 @@
   --border: #{rem(1)} solid var(--color-light-gray);
   --border-light: #{rem(1.25)} solid var(--color-dark-el-gray);
 
-  --transition-duration: 0.2s;
-  --transition-duration-05: 0.5s;
+  --transition-duration: .2s;
+  --transition-duration-05: .5s;
 
   --box-shadow: 0 #{rem(2)} #{rem(4)} rgba(0, 0, 0, 0.1);
 
