@@ -10,7 +10,7 @@ type NavItem = {
 interface DropdownMenuProps {
   isOpen: boolean;
   categories: NavItem[];
-  //   listRef: RefObject<HTMLUListElement>; // RefObject - пишется когда мы принимаем реф в пропсы
+  currentPath: string;
   onClose: () => void
 }
 
@@ -19,21 +19,20 @@ interface DropdownMenuProps {
 // второй - тип пропсов (DropdownMenuProps)
 const DropdownMenu = forwardRef<HTMLUListElement, DropdownMenuProps>(
   // деструктурируем пропсы, listRef - второй параметр forwardRef, который приходит от родителя
-  ({ isOpen, categories, onClose }, listRef) => {
-    // если dropdown закрыт, не рендерим ничего
-    if (!isOpen) return null;
-
+  ({ isOpen, categories, currentPath, onClose }, listRef) => {
     return (
       <ul
-        className={styles.header__categories_list}
+        className={`${styles.header__categories_list} ${isOpen ? styles.header__categories_list_open : ''}`}
         ref={listRef}
         id="categories-list"
+        role="menu"
+        aria-hidden={!isOpen}
       >
         {categories.map((category, categoryIndex) => (
           <li key={categoryIndex} className={styles.header__categories_item} >
             <Link
               to={category.link || '#'}
-              className={styles.header__categories_link}
+              className={`${styles.header__categories_link} ${category.link === currentPath ? styles.header__categories_link_active : ''}`}
               aria-label={`Перейти к странице ${category.text}`}
               onClick={onClose}
             >

@@ -4,7 +4,7 @@ import styles from './ChildrenPage.module.scss'
 
 const ChildrenPage: FC = () => {
   return (
-    <div className={styles.container} style={{padding: '8rem'}}> 
+    <div className={styles.container} style={{padding: '80rem'}}> 
 
         <p>     </p>
 

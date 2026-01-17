@@ -4,12 +4,16 @@ import Arrow from "@/shared/assets/icons/header/arrow-down.svg?react";
 import Search from "@/shared/assets/icons/header/search.svg?react";
 import TransitionWB from "@/shared/assets/icons/header/transition-wb.svg?react";
 import Logo from "@/shared/assets/icons/Logo.svg?react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import DropdownMenu from "./DropdownMenu";
 
 const Header: FC = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [isCategoriesOpen, setIsCategoriesOpen] = useState(false);
+
+  const location = useLocation();
+  const currentPath = location.pathname;
+  const isMainActive = ["/women", "/men", "/children"].includes(currentPath);
 
   const burgerRef = useRef<HTMLButtonElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
@@ -32,7 +36,7 @@ const Header: FC = () => {
   ];
 
   useEffect(() => {
-    if (!isCategoriesOpen || !menuOpen) return;
+    if (!isCategoriesOpen && !menuOpen) return;
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
@@ -42,36 +46,40 @@ const Header: FC = () => {
     };
     const handleClickOutside = (event: MouseEvent) => {
       if (
-        listRef.current &&
-        !listRef.current.contains(event.target as Node) && // если был клик вне списка
-        buttonRef.current &&
-        !buttonRef.current.contains(event.target as Node) && // если был клик вне кнопки
-        burgerRef.current &&
-        !burgerRef.current.contains(event.target as Node) // если был клик вне бургера
+        (listRef.current && !listRef.current.contains(event.target as Node)) && // если был клик вне списка
+        (buttonRef.current &&
+          !buttonRef.current.contains(event.target as Node)) && // если был клик вне кнопки
+        (burgerRef.current &&
+          !burgerRef.current.contains(event.target as Node)) // если был клик вне бургера
       ) {
         setIsCategoriesOpen(false);
         setMenuOpen(false);
       }
     };
-    document.addEventListener("mousedown", handleClickOutside); // слушаем клики по всему документу
+    document.addEventListener("click", handleClickOutside); // слушаем клики по всему документу
     document.addEventListener("keydown", handleKeyDown);
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside); // функция очистки, выполнится при размонтировании или изменении isCategoriesOpen
+      document.removeEventListener("click", handleClickOutside); // функция очистки, выполнится при размонтировании или изменении isCategoriesOpen
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, [isCategoriesOpen, menuOpen]);
 
   useEffect(() => {
     if (isCategoriesOpen) {
-      // когда dropdown открывается, фокусируемся на первой категории
+      // когда dropdown открывается, фокусируемся на активной категории или первой
+      const activeLink = listRef.current?.querySelector(
+        `a[href="${currentPath}"]`
+      ) as HTMLAnchorElement;
       const firstLink = listRef.current?.querySelector(
         "a"
       ) as HTMLAnchorElement;
-      if (firstLink) {
+      if (activeLink) {
+        activeLink.focus();
+      } else if (firstLink) {
         firstLink.focus();
       }
     }
-  }, [isCategoriesOpen]);
+  }, [isCategoriesOpen, currentPath]);
 
   return (
     <header className={`${styles.header} container`}>
@@ -85,12 +93,20 @@ const Header: FC = () => {
           <p className={styles.header__logo_text}>TaSaHa</p>
         </Link>
 
-        <ul className={`${styles.header__list} ${menuOpen ? styles.header__list_open : ''}`}>
-          {navItems.map((item, index) => (
-            <li key={index} className={styles.header__list_item}>
+        <ul
+          className={`${styles.header__list} ${
+            menuOpen ? styles.header__list_open : ""
+          }`}
+          role={menuOpen ? "menu" : undefined}
+          aria-hidden={!menuOpen}
+        >
+          {navItems.map((item, itemId) => (
+            <li key={itemId} className={styles.header__list_item}>
               {item.text === "Главная" ? (
                 <button
-                  className={styles.header__expandable}
+                  className={`${styles.header__expandable} ${
+                    isMainActive ? styles.header__expandable_active : ""
+                  }`}
                   onClick={() => setIsCategoriesOpen(!isCategoriesOpen)}
                   aria-expanded={isCategoriesOpen}
                   aria-controls="categories-list"
@@ -109,8 +125,13 @@ const Header: FC = () => {
               ) : (
                 <Link
                   to={item.link || "#"}
-                  className={styles.header__list_link}
+                  className={`${styles.header__list_link} ${
+                    currentPath === item.link
+                      ? styles.header__list_link_active
+                      : ""
+                  }`}
                   aria-label={`Перейти к странице ${item.text}`}
+                  onClick={() => setMenuOpen(false)}
                 >
                   {item.text}
                 </Link>
@@ -120,29 +141,51 @@ const Header: FC = () => {
                   ref={listRef}
                   isOpen={isCategoriesOpen}
                   categories={categories}
-                  onClose={() => setIsCategoriesOpen(false)}
+                  currentPath={currentPath}
+                  onClose={() => {
+                    setIsCategoriesOpen(false);
+                    setMenuOpen(false);
+                  }}
                 />
               )}
             </li>
           ))}
+          {menuOpen && (
+            <li className={styles.header__list_item}>
+              <a
+                href="https://www.wildberries.ru/brands/310895408-tasaha"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`${styles.header__wb} ${styles.header__wb_menu}`}
+              >
+                <TransitionWB
+                  className={styles.header__wb_icon}
+                  aria-label="Иконка перехода на Wildberries"
+                />
+                <p className={styles.header__wb_text}>Перейти на WB</p>
+              </a>
+            </li>
+          )}
         </ul>
         <div className={styles.header__wb_search_wrapper}>
           <Search
             className={styles.header__search}
             aria-label="Иконка поиска"
           />
-          <a
-            href="https://www.wildberries.ru/brands/310895408-tasaha"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={`${styles.header__wb} ${menuOpen ? styles.header__wb_open : ''}`}
-          >
-            <TransitionWB
-              className={styles.header__wb_icon}
-              aria-label="Иконка перехода на Wildberries"
-            />
-            <p className={styles.header__wb_text}>Перейти на WB</p>
-          </a>
+          {!menuOpen && (
+            <a
+              href="https://www.wildberries.ru/brands/310895408-tasaha"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.header__wb}
+            >
+              <TransitionWB
+                className={styles.header__wb_icon}
+                aria-label="Иконка перехода на Wildberries"
+              />
+              <p className={styles.header__wb_text}>Перейти на WB</p>
+            </a>
+          )}
         </div>
 
         <button
@@ -150,7 +193,7 @@ const Header: FC = () => {
             menuOpen ? styles.header__burger_open : ""
           }`}
           onClick={() => setMenuOpen(!menuOpen)}
-          aria-label={menuOpen ? 'Закрыть меню' : 'Открыть меню'}
+          aria-label={menuOpen ? "Закрыть меню" : "Открыть меню"}
           aria-expanded={menuOpen}
           ref={burgerRef}
         >
