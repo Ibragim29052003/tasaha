@@ -84,7 +84,7 @@
       transform: translateX(0);
       left: auto;
       right: 0;
-      width: 250px;
+      width: rem(250);
     }
 
     @include mobile-above {

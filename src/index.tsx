@@ -3,6 +3,8 @@ import { createRoot } from "react-dom/client";
 import "@/shared/scss/index.scss";
 import App from "./app/App.tsx";
 import { BrowserRouter } from "react-router-dom";
+import { Provider } from "react-redux";
+import { store } from "./redux/store.ts";
 
 const root = createRoot(document.getElementById("root") as HTMLElement);
 
@@ -15,8 +17,10 @@ root.render(
        2. контент на странице меняется
        3. страница не перезагружается
         */}
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
+    <Provider store={store}>
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    </Provider>
   </StrictMode>
 );
