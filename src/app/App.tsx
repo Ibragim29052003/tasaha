@@ -28,7 +28,7 @@ const App = () => {
         <Layout className={styles.layout}>
           {/* Основной контент приложения будет здесь */}
           <Header />
-          <Layout.Content> {/* Основная часть страницы */}
+          <Layout.Content className="container"> {/* Основная часть страницы */}
             <AppRouter /> {/* Роутер — здесь будут страницы */}
           </Layout.Content>
           <Footer />

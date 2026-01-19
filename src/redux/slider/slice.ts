@@ -4,9 +4,8 @@ import type { Slide, SliderState } from "./types";
 const initialState: SliderState = {
   slides: [], // массив слайдов
   currentIndex: 0,
-  loading: false, // НА ПОДУМАТЬ
+//   loading: false, // НА ПОДУМАТЬ
   autoPlay: true, // включена ли автопрокрутка слайдов
-  autoPlayInterval: 5000,
   showArrows: true,
 };
 

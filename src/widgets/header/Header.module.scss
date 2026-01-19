@@ -18,6 +18,8 @@
   transform: translateX(-50%);
   width: 100%;
   font-family: var(--font-family-CeraPro-Regular);
+  z-index: 100;
+  background-color: var(--color-white);
 
   &__nav {
     @include flex-center;

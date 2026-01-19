@@ -1,27 +1,33 @@
 // Импортируем тип Slide из Redux слайдера
 import type { Slide } from '@/redux/slider/types';
 
+import imagePhotoroom from './image-Photoroom.png';
+import imagePhotoroom2 from './image-Photoroom-2.png';
+import imagePhotoroom3 from './image-Photoroom-3.png';
+
+
+
 // ------------------------------
 // Пример слайдов для мужчин
 // ------------------------------
 export const menSlides: Slide[] = [
   {
     id: 1,
-    imageUrl: '/images/men1.jpg',
-    title: 'Новинка для мужчин',
-    description: 'Стильная и удобная одежда для мужчин.',
+    imageUrl: imagePhotoroom,
+    title: 'Ваш стиль — ваши правила. Со скидкой!',
+    description: 'Строгий крой, но такая мягкая ткань! Платье-рубашка из коллекции — это элегантность, скромность и невероятный комфорт. Успейте оформить заказ по акционной цене и создайте свой неповторимый образ',
     link: '#', // ссылка, если нужно перейти
   },
   {
     id: 2,
-    imageUrl: '/images/men2.jpg',
+    imageUrl: imagePhotoroom2,
     title: 'Летняя коллекция',
     description: 'Легкая и дышащая одежда для теплого сезона.',
     link: '#',
   },
   {
     id: 3,
-    imageUrl: '/images/men3.jpg',
+    imageUrl: imagePhotoroom3,
     title: 'Спортивный стиль',
     description: 'Удобная одежда для активного образа жизни.',
     link: '#',
