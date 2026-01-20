@@ -270,20 +270,13 @@
   }
 
   &__wb {
+    @include wb-button;
     display: none;
     position: absolute;
     top: 250%;
     left: 0;
     right: 0;
     gap: rem(4);
-    padding: rem(7) rem(17);
-    border-radius: rem(6);
-    color: var(--color-white);
-    background-color: var(--color-accent);
-
-    @include hover {
-      color: var(--color-black);
-    }
 
     &_open {
       @include flex-center;
@@ -310,6 +303,26 @@
       right: auto;
       width: auto;
       display: flex;
+    }
+
+    &_icon {
+      width: rem(18);
+      height: rem(18);
+      transition: transform 0.3s ease;
+      position: relative;
+      z-index: 2;
+
+      @include hover {
+        transform: scale(1.1);
+      }
+    }
+
+    &_text {
+      font-size: rem(14);
+      font-weight: 600;
+      margin: 0;
+      position: relative;
+      z-index: 2;
     }
   }
 

@@ -3,6 +3,8 @@ export type Slide = {
   imageUrl: string;
   title: string;
   description: string;
+  newPrice: number;
+  oldPrice?: number;
   link: string;
 };
 
