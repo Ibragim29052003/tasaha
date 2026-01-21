@@ -96,7 +96,7 @@ const Slider: FC = () => {
                 <Price newPrice={slide.newPrice} oldPrice={slide.oldPrice} />
               </div>
 
-              <a className={styles.slider__link} href={slide.link}>
+              <a className={styles.slider__link} href={slide.link} target="blank">
                 Купить на WB
               </a>
             </div>

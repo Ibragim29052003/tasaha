@@ -1,3 +1,9 @@
 @use "../../shared/scss/helpers/" as *;
 
 
+.children {
+    &__title {
+        padding-top: fluid(150, 100);
+        text-align: center;
+    }
+}

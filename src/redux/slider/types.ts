@@ -1,5 +1,5 @@
 export type Slide = {
-  id: number;
+  id: string;
   imageUrl: string;
   title: string;
   description: string;

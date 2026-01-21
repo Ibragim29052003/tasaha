@@ -11,6 +11,10 @@
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.11.2",
+    "@sanity/asset-utils": "^2.3.0",
+    "@sanity/client": "^7.14.0",
+    "@sanity/image-url": "^2.0.3",
+    "@sanity/types": "^5.5.0",
     "@tanstack/react-query": "^5.90.16",
     "@types/react-redux": "^7.1.34",
     "@types/react-router-dom": "^5.3.3",

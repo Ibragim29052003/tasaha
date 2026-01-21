@@ -5,7 +5,6 @@
   width: 100%;
   height: fluid(500, 400);
   margin-top: rem(120);
-  padding: rem(30) rem(20);
   overflow: hidden;
   perspective: rem(1200);
   background: linear-gradient(
@@ -20,15 +19,14 @@
   @include tablet {
     height: fluid(800, 500);
     margin-top: rem(120);
-    padding: rem(25) rem(15);
   }
 
   @include mobile {
-    height: fluid(700, 600);
+    height: fluid(1000, 750);
     margin-top: rem(100);
-    padding: rem(20) rem(10);
     border-radius: rem(15);
   }
+
 
   &__slidesContainer {
     display: flex;
@@ -90,13 +88,13 @@
 
     @include tablet {
       width: calc(100% - #{rem(15)});
-      flex-direction: column;
       text-align: center;
       border-radius: rem(12);
     }
 
     @include mobile {
       width: calc(100% - #{rem(10)});
+      flex-direction: column;
       border-radius: rem(10);
     }
   }
@@ -117,8 +115,12 @@
     }
 
     @include mobile {
-      padding: rem(30) 0;
+      padding: 0 0 rem(30);
     }
+
+    // @include mobile-s {
+    //   padding-top: 0;
+    // }
 
     &_text {
       display: grid;
@@ -242,7 +244,7 @@
   &__img {
     flex: 1;
     height: 100%;
-    object-fit: contain;
+    object-fit: cover;
     border-radius: rem(15);
     position: relative;
     z-index: 1;
@@ -268,16 +270,19 @@
     }
 
     @include tablet {
-      flex: 2;
-      width: 100%;
-      height: fluid(300, 200);
+      flex: 1;
+      width: 50%;
       border-radius: rem(12) rem(12) 0 0;
       order: 1;
     }
 
     @include mobile {
-      height: fluid(250, 180);
+      width: 60%;
       border-radius: rem(10) rem(10) 0 0;
+    }
+
+    @include mobile-s {
+      width: 70%;
     }
   }
 
