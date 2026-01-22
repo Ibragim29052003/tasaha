@@ -1,6 +1,6 @@
 import { createClient } from '@sanity/client'
 
-// создаём клиент
+// создаем клиент Sanity
 export const client = createClient({
     projectId: '44ezgbz2',
     dataset: 'production',
@@ -9,7 +9,7 @@ export const client = createClient({
     token: import.meta.env.VITE_SANITY_READ_TOKEN
 })
 
-// Тип для поля image из Sanity
+// тип для поля изображения из Sanity
 export type SanityImage = {
   _type: 'image'
   asset: {
@@ -20,12 +20,12 @@ export type SanityImage = {
 
 
 
- // Генерация URL изображения без builder
+// генерация URL изображения без использования builder
  
 export const urlFor = (image: SanityImage | null | undefined): string => {
   if (!image || !image.asset?._ref) return ''
 
-  const ref = image.asset._ref 
+  const ref = image.asset._ref
   const [, id, dimensions, format] = ref.split('-') // id = abc123, dimensions = 800x600, format = png
   return `https://cdn.sanity.io/images/44ezgbz2/production/${id}-${dimensions}.${format}`
 }
