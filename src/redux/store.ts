@@ -1,5 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit";
 import sliderReducer from "./slider/slice";
+import filtersReducer from './filter/slice'
 import {
   useDispatch,
   type TypedUseSelectorHook,
@@ -10,6 +11,7 @@ import { productsApi } from "@/sanity/productsApi";
 export const store = configureStore({
   reducer: {
     slider: sliderReducer,
+    filters: filtersReducer,
 
     // добавляем RTK Query reducer
     [productsApi.reducerPath]: productsApi.reducer,
