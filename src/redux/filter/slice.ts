@@ -3,6 +3,7 @@ import type { Filters, FiltersState } from "./types";
 
 const initialFilters: Filters = {
   categories: [],
+  fabrics: [],
   sizes: [],
   colors: [],
   minPrice: undefined,
@@ -22,6 +23,10 @@ const filtersSlice = createSlice({
       state.filters.categories = action.payload;
     },
 
+    setFabrics: (state, action: PayloadAction<string[]>) => {
+        state.filters.fabrics = action.payload
+    },
+
     setSizes: (state, action: PayloadAction<string[]>) => {
       state.filters.sizes = action.payload;
     },
@@ -36,6 +41,10 @@ const filtersSlice = createSlice({
 
     setMaxPrice: (state, action: PayloadAction<number | undefined>) => {
       state.filters.maxPrice = action.payload;
+    },
+
+    setIsNew: (state, action: PayloadAction<boolean | undefined>) => {
+        state.filters.isNew = action.payload
     },
 
     setSortBy: (state, action: PayloadAction<Filters['sortBy']>) => {
@@ -58,11 +67,13 @@ const filtersSlice = createSlice({
 
 export const {
     setCategories,
+    setFabrics,
     setSizes,
     setColors,
     setMinPrice,
     setMaxPrice,
     setSortBy,
+    setIsNew,
     updateFilters,
     clearFilters
 } = filtersSlice.actions
