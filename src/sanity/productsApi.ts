@@ -1,10 +1,9 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { createApi } from "@reduxjs/toolkit/query/react";
 import { client, urlFor, type SanityImage } from "./sanityClient";
 import type { Slide } from "@/redux/slider/types";
-import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import type { Filters } from "@/redux/filter/types";
 
-// тип данных, который приходит с Sanity для слайдов
+// тип продукта из Sanity - это наша база данных товаров, где хранятся основные данные о продуктах
 type SanityProduct = {
   _id: string;
   title: string;
@@ -13,214 +12,193 @@ type SanityProduct = {
   price: number;
   oldPrice?: number;
   wbLink: string;
-
-  // для фильтров
-  categories: string[];
-  fabrics: string[];
-  colors: string[];
-  sizes: string[];
-  isNew: boolean;
-  nmId: string; // для WB API
+  nmId?: string;
 };
 
-// API для получения продуктов из Sanity CMS
+// тип карточки из Wildberries - это данные, которые мы получаем из внешнего API маркетплейса
+type WbCard = {
+  nmID: number;
+  title: string;
+  description: string;
+  brand?: string;
+  photos?: {
+    big: string;
+  }[];
+};
+
+// создаем API для работы с продуктами с использованием RTK Query
+// RTK Query - это мощный инструмент для управления кэшированием и синхронизацией данных
 export const productsApi = createApi({
+  // уникальный ключ для редюсера в Redux store
   reducerPath: "productsApi",
-  baseQuery: fetchBaseQuery({ baseUrl: "/" }),
+
+  // заглушка для baseQuery, так как мы используем кастомную логику запросов
+  // baseQuery требуется RTK Query для типизации, но мы не используем стандартный fetchBaseQuery
+  baseQuery: async () => ({ data: null }),
+
+  // определяем конечные точки API - методы для получения данных
   endpoints: (builder) => ({
-    // для слайдера
+    // получение всех продуктов для главной страницы (слайдер) 
     getProducts: builder.query<Slide[], void>({
-      queryFn: async (): Promise<
-        { data: Slide[] } | { error: FetchBaseQueryError }
-      > => {
+      // queryFn определяет как выполнять запрос и обрабатывать результат
+      queryFn: async () => {
         try {
-          // получение активных продуктов из Sanity
-          const data: SanityProduct[] = await client.fetch(
-            `*[_type == "product" && active==true]{
+          // Шаг 1: запрашиваем активные продукты из Sanity CMS
+          // Sanity - это headless CMS, где мы храним информацию о наших товарах
+          const sanityProducts: SanityProduct[] = await client.fetch(
+            `*[_type == "product" && active == true]{
               _id,
               title,
               description,
               image,
               price,
               oldPrice,
-              wbLink
+              wbLink,
+              nmId
             }`
           );
 
-          // преобразование данных в формат слайдов
-          const slides: Slide[] = data.map((p) => ({
-            id: p._id,
-            title: p.title,
-            description: p.description,
-            imageUrl: urlFor(p.image),
-            newPrice: p.price,
-            oldPrice: p.oldPrice,
-            link: p.wbLink,
-          }));
+          // Шаг 2: получаем актуальные данные из Wildberries через наш backend
+          // Backend нужен для безопасного хранения токенов и кэширования данных
+          const wbResponse = await fetch(
+            ""
+          );
+          const wbCards: WbCard[] = await wbResponse.json();
 
+          // Шаг 3: объединяем данные из двух источников
+          // приоритет отдается данным из Wildberries как более актуальным
+          const slides: Slide[] = sanityProducts.map((product) => {
+            // ищем соответствующий товар в данных Wildberries по идентификатору
+            const wbCard = wbCards.find(
+              (card) => card.nmID === Number(product.nmId)
+            );
+
+            // создаем объект слайда с объединенными данными
+            return {
+              id: product._id,
+              // используем название из Wildberries если есть, иначе из Sanity
+              title: wbCard?.title || product.title,
+              // используем описание из Wildberries если есть, иначе из Sanity
+              description: wbCard?.description || product.description,
+              // используем фото из Wildberries если есть, иначе конвертируем изображение из Sanity
+              imageUrl: wbCard?.photos?.[0]?.big || urlFor(product.image),
+              //////////////////////// ПОСМОТРЮ ПОТОМ СТРУКТУРУ ОТВЕТА
+              //  цены пока берем только из Sanity, так как Wildberries может иметь другую структуру цен
+              newPrice: product.price,
+              oldPrice: product.oldPrice,
+              // ссылка на товар в Wildberries
+              link: product.wbLink,
+            };
+          });
+
+          // возвращаем успешный результат с данными
           return { data: slides };
-        } catch (err: unknown) {
-          // обработка ошибок при запросе к Sanity
-          const error: FetchBaseQueryError = {
-            status: "FETCH_ERROR",
-            error:
-              err instanceof Error
-                ? err.message
-                : JSON.stringify(err) || "Unknown error",
+        } catch (e) {
+          // обрабатываем ошибки и возвращаем их в формате RTK Query
+          return {
+            error: {
+              message: e instanceof Error ? e.message : "Unknown error",
+            },
           };
-          return { error };
         }
       },
     }),
-    // для фильтрованных продуктов
+
+    // получение отфильтрованных продуктов для каталога
+    // фильтры передаются как параметры запроса
     getFilteredProducts: builder.query<Slide[], Filters>({
-      queryFn: async (filters: Filters) => {
+      queryFn: async (filters) => {
         try {
-          // базовый GROQ-запрос:
-          // выбираем только активные продукты типа "product"
+          // Шаг 1: строим динамический GROQ-запрос к Sanity на основе переданных фильтров
+          // GROQ - это язык запросов Sanity, похожий на GraphQL
           let query = `*[_type == "product" && active == true`;
 
-          // фильтр по категориям (если выбраны)
-          // проверяем, что хотя бы одна категория продукта есть в filters.categories
-          if (filters.categories.length > 0) {
-            query += ` && count((categories[])[@ in $categories]) > 0`;
-          }
+          // добавляем условия фильтрации в запрос
+          if (filters.categories.length)
+            query += ` && count(categories[@ in $categories]) > 0`;
 
-          if (filters.fabrics.length > 0) {
-            query += ` && count((fabrics[])[@ in $fabrics]) > 0`;
-          }
+          if (filters.fabrics.length)
+            query += ` && count(fabrics[@ in $fabrics]) > 0`;
 
-          // фильтр по цветам
-          if (filters.colors.length > 0) {
-            query += ` && count((colors[])[@ in $colors]) > 0`;
-          }
+          if (filters.colors.length)
+            query += ` && count(colors[@ in $colors]) > 0`;
 
-          // фильтр по размерам
-          if (filters.sizes.length > 0) {
-            query += ` && count((sizes[])[@ in $sizes]) > 0`;
-          }
+          if (filters.sizes.length)
+            query += ` && count(sizes[@ in $sizes]) > 0`;
 
-          if (filters.isNew) {
+          if (filters.isNew)
             query += ` && isNew == true`;
-          }
 
-          if (filters.minPrice !== undefined) {
+          if (filters.minPrice !== undefined)
             query += ` && price >= $minPrice`;
-          }
 
-          if (filters.maxPrice !== undefined) {
+          if (filters.maxPrice !== undefined)
             query += ` && price <= $maxPrice`;
-          }
 
-          // закрываем условия и выбираем нужные поля
+          // завершаем базовую часть запроса и указываем какие поля возвращать
           query += `]{
-        _id,
-        title,
-        description,
-        image,
-        price,
-        oldPrice,
-        wbLink,
-        nmId
-      }`;
+            _id,
+            title,
+            description,
+            image,
+            price,
+            oldPrice,
+            wbLink,
+            nmId
+          }`;
 
-          // по возрастанию цены
-          if (filters.sortBy === "price_asc") {
+          // добавляем сортировку в зависимости от выбранного параметра
+          if (filters.sortBy === "price_asc")
             query += ` | order(price asc)`;
-          }
-          // по убыванию цены
-          else if (filters.sortBy === "price_desc") {
+          else if (filters.sortBy === "price_desc")
             query += ` | order(price desc)`;
-          }
-          //
-          else if (filters.sortBy === "new") {
+          else if (filters.sortBy === "new")
             query += ` | order(_createdAt desc)`;
-          }
 
-          // ЗАПРОС В SANITY
-          // передаём параметры фильтров как GROQ-переменные
-          const sanityData: SanityProduct[] = await client.fetch(query, {
-            categories: filters.categories,
-            fabrics: filters.fabrics,
-            colors: filters.colors,
-            sizes: filters.sizes,
-            minPrice: filters.minPrice,
-            maxPrice: filters.maxPrice,
+          // Шаг 2: выполняем запрос к Sanity с фильтрами
+          const sanityProducts: SanityProduct[] = await client.fetch(query, filters);
+
+          // Шаг 3: получаем актуальные данные из Wildberries
+          const wbResponse = await fetch(
+            ""
+          );
+          const wbCards: WbCard[] = await wbResponse.json();
+
+          // Шаг 4: объединяем данные из Sanity и Wildberries
+          const products: Slide[] = sanityProducts.map((product) => {
+            const wbCard = wbCards.find(
+              (card) => card.nmID === Number(product.nmId)
+            );
+
+            return {
+              id: product._id,
+              title: wbCard?.title || product.title,
+              description: wbCard?.description || product.description,
+              imageUrl: wbCard?.photos?.[0]?.big || urlFor(product.image),
+              newPrice: product.price,
+              oldPrice: product.oldPrice,
+              link: product.wbLink,
+            };
           });
 
-          // ОБОГАЩЕНИЕ ДАННЫХ ЧЕРЕЗ WB API
-          // для каждого продукта пытаемся подтянуть актуальные данные из Wildberries
-          const products: Slide[] = await Promise.all(
-            sanityData.map(async (p) => {
-              // если есть nmId — можно запросить WB API
-              if (p.nmId) {
-                try {
-                  // запрос к WB API по nmId
-                  const wbResponse = await fetch(
-                    `https://card.wb.ru/cards/v2/detail?nm=${p.nmId}`
-                  );
-
-                  const wbData = await wbResponse.json();
-                  const product = wbData.data.products[0]; // предполагаем такую структуру ответа
-
-                  // возвращаем данные с приоритетом WB
-                  return {
-                    id: p._id,
-                    title: product.name || p.title, // название из WB или fallback
-                    description: p.description, // описание всегда из Sanity
-                    imageUrl: product.image || urlFor(p.image), // изображение WB или Sanity
-                    newPrice: product.price || p.price, // цена WB или Sanity
-                    oldPrice: product.oldPrice || p.oldPrice,
-                    link: p.wbLink,
-                  };
-                } catch (wbErr) {
-                  // если WB API упал — логируем и используем данные из Sanity
-                  console.warn(`WB API error for nmId ${p.nmId}:`, wbErr);
-
-                  return {
-                    id: p._id,
-                    title: p.title,
-                    description: p.description,
-                    imageUrl: urlFor(p.image),
-                    newPrice: p.price,
-                    oldPrice: p.oldPrice,
-                    link: p.wbLink,
-                  };
-                }
-              }
-
-              // FALLBACK
-              // если nmId нет — используем только Sanity
-              return {
-                id: p._id,
-                title: p.title,
-                description: p.description,
-                imageUrl: urlFor(p.image),
-                newPrice: p.price,
-                oldPrice: p.oldPrice,
-                link: p.wbLink,
-              };
-            })
-          );
-
-          // успешный ответ RTK Query
+          // возвращаем отфильтрованные и обогащенные продукты
           return { data: products };
-        } catch (err: unknown) {
-          //  ОБРАБОТКА ОШИБОК
-          const error: FetchBaseQueryError = {
-            status: "FETCH_ERROR",
-            error:
-              err instanceof Error
-                ? err.message
-                : JSON.stringify(err) || "Unknown error",
+        } catch (e) {
+          // обработка ошибок
+          return {
+            error: {
+              message: e instanceof Error ? e.message : "Unknown error",
+            },
           };
-
-          return { error };
         }
       },
     }),
   }),
 });
 
-// экспорт хука для использования в компонентах
-export const { useGetProductsQuery, useGetFilteredProductsQuery } = productsApi;
+// экспортируем хуки для использования в React-компонентах
+// эти хуки автоматически генерируются RTK Query
+export const {
+  useGetProductsQuery, // хук для получения всех продуктов
+  useGetFilteredProductsQuery, // хук для получения отфильтрованных продуктов
+} = productsApi;

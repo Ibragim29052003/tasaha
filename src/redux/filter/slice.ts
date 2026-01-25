@@ -8,6 +8,7 @@ const initialFilters: Filters = {
   colors: [],
   minPrice: undefined,
   maxPrice: undefined,
+  isNew: undefined,
   sortBy: undefined,
 };
 
