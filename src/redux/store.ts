@@ -1,6 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit";
 import sliderReducer from "./slider/slice";
-import filtersReducer from "./filter/slice";
+import filtersReducer from './filter/slice'
 import {
   useDispatch,
   type TypedUseSelectorHook,
