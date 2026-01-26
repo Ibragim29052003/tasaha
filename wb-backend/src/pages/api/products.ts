@@ -37,7 +37,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       imageUrl: card.photos?.[0]?.big || "/placeholder.jpg",
       link: `https://www.wildberries.ru/catalog/${card.nmID}/detail.aspx`,
     }));
-
+ 
     res.status(200).json({ slides });
   } catch (error: any) {
     console.error("WB API error:", error.response?.data || error.message);
