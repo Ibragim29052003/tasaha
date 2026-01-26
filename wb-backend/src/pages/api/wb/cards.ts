@@ -1,69 +1,109 @@
-import type { NextApiRequest, NextApiResponse } from "next";
+// src/pages/api/wb/cards.ts
+import type { NextApiRequest, NextApiResponse } from "next"
 
-// тип карточки WB для слайдера
-type WbSlide = {
-  id: string;        // nmID карточки
-  title: string;     // название товара
-  imageUrl: string;  // главное фото
-  link: string;      // ссылка на WB
-};
+// тип карты товара, которую вернем на фронт
+type WbCard = {
+  nmId: number
+  title: string
+  description: string
+  images: string[]       // массив больших изображений
+  video: string[]        // ссылки на видео
+  price: number          // текущая цена
+  oldPrice?: number      // старая цена, если есть
+  availability: number   // остаток на складе
+  sizes?: string[]
+  colors?: string[]
+  categories?: string[]  // категории товаров, например платья, рубашки
+}
+
+// точный тип ответа WB API
+type WbApiPhoto = {
+  big: string
+  c246x328: string
+  c516x688: string
+  square: string
+  tm: string
+}
+
+type WbApiSize = {
+  chrtID: number
+  techSize: string
+  skus?: string[]
+}
+
+type WbApiCharacteristic = {
+  id: number
+  name: string
+  value: string[]
+}
 
 type WbApiCard = {
-  nmID: number;
-  title: string;
-  photos: { big: string }[];
-};
+  nmID: number
+  title: string
+  description: string
+  photos?: WbApiPhoto[]
+  video?: string
+  price?: number
+  oldPrice?: number
+  sizes?: WbApiSize[]
+  characteristics?: WbApiCharacteristic[]
+  subjectName?: string
+}
 
-type WbApiResponse = {
-  cards: WbApiCard[];
-};
-
+// handler api
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<WbSlide[] | { message: string }>
+  res: NextApiResponse<WbCard[] | { error: string }>
 ) {
   try {
-    const idsQuery = req.query.ids as string;
-    if (!idsQuery) return res.status(400).json({ message: "ids not provided" });
+    // ожидаем список nmId через query: ?nmIds=123,456
+    const nmIds = req.query.nmIds
+      ? (req.query.nmIds as string).split(",").map(Number)
+      : []
 
-    const ids = idsQuery.split(",").map((id) => Number(id));
+    if (!nmIds.length) {
+      return res.status(400).json({ error: "nmIds query required" })
+    }
 
-    const WB_API_KEY = process.env.WB_API_KEY;
-    if (!WB_API_KEY)
-      return res.status(500).json({ message: "WB_API_KEY not set" });
-
-    const wbResponse = await fetch(
+    // запрос к wb api через backend, ключ хранится только на сервере
+    const response = await fetch(
       "https://content-api.wildberries.ru/content/v2/get/cards/list",
       {
         method: "POST",
         headers: {
+          Authorization: process.env.WB_API_KEY!,
           "Content-Type": "application/json",
-          Authorization: WB_API_KEY,
         },
         body: JSON.stringify({
-          settings: { cursor: { limit: ids.length }, filter: { withPhoto: -1 } },
-          nmIds: ids,
+          settings: { cursor: { limit: 100 } },
+          nmIds,
         }),
       }
-    );
+    )
 
-    if (!wbResponse.ok) {
-      const text = await wbResponse.text();
-      return res.status(500).json({ message: `WB API error: ${text}` });
-    }
+    const data: { cards: WbApiCard[] } = await response.json()
 
-    const wbData: WbApiResponse = await wbResponse.json();
+    // преобразуем данные в формат wbCard для фронта
+    const cards: WbCard[] = (data.cards || []).map((c) => ({
+      nmId: c.nmID,
+      title: c.title,
+      description: c.description,
+      images: c.photos?.map((p) => p.big) || [],
+      video: c.video ? [c.video] : [],
+      price: c.price || 0,
+      oldPrice: c.oldPrice,
+      availability:
+        c.sizes?.reduce((acc, s) => acc + (s.skus?.length || 0), 0) || 0,
+      sizes: c.sizes?.map((s) => s.techSize),
+      colors:
+        c.characteristics?.find((ch) => ch.name.toLowerCase() === "цвет")
+          ?.value || [],
+      categories: c.subjectName ? [c.subjectName] : [],
+    }))
 
-    const slides: WbSlide[] = wbData.cards.map((card) => ({
-      id: card.nmID.toString(),
-      title: card.title,
-      imageUrl: card.photos?.[0]?.big || "",
-      link: `https://www.wildberries.ru/catalog/${card.nmID}/detail.aspx`,
-    }));
-
-    res.status(200).json(slides);
+    res.status(200).json(cards)
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: err instanceof Error ? err.message : "unknown error" });
+    console.error(err)
+    res.status(500).json({ error: "failed to fetch wb cards" })
   }
 }

@@ -9,26 +9,27 @@ import {
   selectAutoPlay,
   selectCurrentIndex,
   selectShowArrows,
+  selectSlides,
 } from "@/redux/slider/selectors";
 import { setCurrentIndex, toggleAutoPlay } from "@/redux/slider/slice";
 import { useSwipeable } from "react-swipeable";
-import { useGetSliderProductsQuery } from "@/sanity/productsApi"; // RTK Query хук
 
 const Slider: FC = () => {
   const dispatch = useAppDispatch();
   const [isHovered, setIsHovered] = useState(false);
 
+  // получаем данные из редакса
+  const slides = useAppSelector(selectSlides);
   const currentIndex = useAppSelector(selectCurrentIndex);
   const autoPlay = useAppSelector(selectAutoPlay);
   const showArrows = useAppSelector(selectShowArrows);
 
-  // **RTK Query**: получаем слайды с сервера
-  const { data: slides = [], isLoading } = useGetSliderProductsQuery();
-
   // функция перехода к следующему слайду
+  // useCallback для мемоизации, чтобы не создавать новую функцию при каждом рендере
   const goToNextSlide = useCallback(() => {
+    // считаем новый индекс, если дошли до конца, то возвращаемся к первому слайду
     const nextIndex = (currentIndex + 1) % slides.length;
-    dispatch(setCurrentIndex(nextIndex));
+    dispatch(setCurrentIndex(nextIndex)); // меняем currentIndex в редаксе
   }, [currentIndex, slides.length, dispatch]);
 
   // функция перехода к предыдущему слайду
@@ -37,14 +38,16 @@ const Slider: FC = () => {
     dispatch(setCurrentIndex(prevIndex));
   }, [currentIndex, slides.length, dispatch]);
 
-  // автопрокрутка
+  // автопрокрутка слайдов
   useEffect(() => {
-    if (!autoPlay || slides.length === 0) return;
+    if (!autoPlay || slides.length === 0) return; // если автоплей выключен или нет слайдов, не запускаем
 
     const interval = setInterval(goToNextSlide, 5000);
-    return () => clearInterval(interval);
+
+    return () => clearInterval(interval); // отработает при размонтировании или изменении зависимостей
   }, [autoPlay, goToNextSlide, slides.length]);
 
+  // пауза автопрокрутки при наведении мыши
   const handleMouseEnter = () => {
     dispatch(toggleAutoPlay());
     setIsHovered(true);
@@ -55,33 +58,31 @@ const Slider: FC = () => {
   };
 
   const handlers = useSwipeable({
-    onSwipedLeft: goToNextSlide,
-    onSwipedRight: goToPrevSlide,
-    preventScrollOnSwipe: true,
-    trackMouse: true,
-  });
+    onSwipedLeft: () => goToNextSlide(),
+    onSwipedRight: () => goToPrevSlide(),
+    preventScrollOnSwipe: true, //  предотвращает скролл страницы при свайпе
+    trackMouse: true, // для drag мышью
+  })
 
-
-
-  if (isLoading) return <div>Загрузка слайдов...</div>;
-  if (slides.length === 0) return <div>Слайды не найдены</div>;
+  // если слайды не загружены, показываем заглушку (можно заменить на спиннер или скелетон)
+  if (slides.length === 0) return <div>Загрузка слайдов</div>;
 
   return (
     <div
       className={styles.slider}
-      onMouseEnter={handleMouseEnter}
+      onMouseEnter={handleMouseEnter} {...handlers}
       onMouseLeave={handleMouseLeave}
-      {...handlers}
       role="region"
       aria-label="Слайдер"
     >
       <div
         className={styles.slider__slidesContainer}
+        ////// смещаем по X в зависимости от currentIndex ALOOOOOOOO
         style={{ transform: `translateX(-${currentIndex * 100}%)` }}
       >
         {slides.map((slide) => (
           <div key={slide.id} className={styles.slider__slide}>
-            <img
+             <img
               className={styles.slider__img}
               src={slide.imageUrl}
               alt={slide.title}
@@ -94,49 +95,33 @@ const Slider: FC = () => {
                 </p>
                 <Price newPrice={slide.newPrice} oldPrice={slide.oldPrice} />
               </div>
-              <a
-                className={styles.slider__link}
-                href={slide.link}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
+
+              <a className={styles.slider__link} href={slide.link} target="blank">
                 Купить на WB
               </a>
             </div>
           </div>
         ))}
       </div>
-
       {showArrows && (
         <>
-          <ArrowButton
-            direction="left"
-            onClick={goToPrevSlide}
-            ariaLabel="Предыдущий слайд"
-            isVisible={isHovered}
-          />
-          <ArrowButton
-            direction="right"
-            onClick={goToNextSlide}
-            ariaLabel="Следующий слайд"
-            isVisible={isHovered}
-          />
+          <ArrowButton direction="left" onClick={goToPrevSlide} ariaLabel="Предыдущий слайд" isVisible={isHovered} />
+          <ArrowButton direction="right" onClick={goToNextSlide} ariaLabel="Следующий слайд" isVisible={isHovered} />
         </>
       )}
 
       <div className={styles.slider__dots}>
         {slides.map((_, index) => (
-          <button
-            key={index}
-            className={`${styles.slider__dot} ${
-              index === currentIndex ? styles.slider__dot_active : ""
-            }`}
-            onClick={() => dispatch(setCurrentIndex(index))}
-            aria-label={`Слайд ${index + 1}`}
-            aria-current={index === currentIndex ? "true" : undefined}
-          />
+          <button 
+          key={index}
+          className={`${styles.slider__dot} ${index === currentIndex ? styles.slider__dot_active : ''}`}
+          onClick={() => dispatch(setCurrentIndex(index))}
+          aria-label={`Слайд ${index + 1}`}
+          aria-current={index === currentIndex ? 'true' : undefined}
+         />
         ))}
       </div>
+
     </div>
   );
 };
