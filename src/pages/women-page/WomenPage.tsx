@@ -10,7 +10,7 @@ const WomenPage: FC = () => {
   const dispatch = useAppDispatch();
 
   // получаем продукты с Sanity
-  const { data: slides, isLoading, error } = useGetProductsQuery();
+  const { data: slides, isLoading, error } = useGetProductsQuery("women");
 
   useEffect(() => {
     if (!isLoading && slides) {

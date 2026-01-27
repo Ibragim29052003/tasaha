@@ -3,6 +3,7 @@ import WomenPage from "@/pages/women-page/WomenPage";
 import MenPage from "@/pages/men-page/MenPage";
 import ChildrenPage from "@/pages/children-page/ChildrenPage";
 import AboutPage from "@/pages/about-page/AboutPage";
+import ProductDetailPage from "@/pages/product-detail-page";
 
 const AppRouter = () => {
   return (
@@ -14,6 +15,7 @@ const AppRouter = () => {
       <Route path="/men" element={<MenPage />} />
       <Route path="/children" element={<ChildrenPage />} />
       <Route path="/about" element={<AboutPage />} />
+      <Route path="/product/:id" element={<ProductDetailPage />}/>
     </Routes>
   );
 };
