@@ -2,80 +2,90 @@ import { useAppDispatch, useAppSelector } from "@/redux/store";
 import styles from "./FilterPanel.module.scss";
 import { selectFilters } from "@/redux/filter/selectors";
 import { updateFilters } from "@/redux/filter/slice";
+import FilterCheckboxGroup from "./FilterCheckboxGroup/FilterCheckboxGroup";
 
-type Category =
-  | "платья"
-  | "костюмы"
-  | "рубашки"
-  | "жилетки"
-  | "платье-халат"
-  | "платье со штанами";
+const FILTER_CONFIGS = {
+  women: {
+    fabrics: [
+      "платья",
+      "костюмы",
+      "блузки",
+      "юбки",
+      "платье-халат",
+      "платье со штанами",
+    ] as const,
+    colors: ["красный", "розовый", "черный", "белый", "синий", "бежевый"] as const,
+    sizes: ["XS", "S", "M", "L", "XL", "42", "44", "46", "48"] as const,
+  },
+  men: {
+    fabrics: ["рубашки", "брюки", "костюмы", "пиджаки", "джинсы", "поло"] as const,
+    colors: ["синий", "серый", "черный", "белый", "коричневый", "зеленый"] as const,
+    sizes: ["S", "M", "L", "XL", "48", "50", "52", "54"] as const,
+  },
+  children: {
+    fabrics: ["платья", "шорты", "футболки", "джинсы", "пижамы", "комбинезоны"] as const,
+    colors: [
+      "розовый",
+      "голубой",
+      "желтый",
+      "зеленый",
+      "красный",
+      "фиолетовый",
+    ] as const,
+    sizes: ["98", "104", "110", "116", "122", "128", "134"] as const,
+  },
+} as const;
 
-const CATEGORIES: Category[] = [
-  "платья",
-  "костюмы",
-  "рубашки",
-  "жилетки",
-  "платье-халат",
-  "платье со штанами",
-];
+// category определяет, какие именно фильтры будут показаны
+interface FilterPanelProps {
+  category: "women" | "men" | "children";
+}
 
-const FilterPanel = () => {
-  const dispatch = useAppDispatch();
+const FilterPanel = ({ category }: FilterPanelProps) => {
+  const dispatch = useAppDispatch(); // для обновления состояния фильтров
 
   // получаем данные из редакса
   const filters = useAppSelector(selectFilters);
 
-  // если значение есть — удаляем, если значения нет — добавляем (такая логика типична для чекбоксов)
-  const toggleValue = <T,>(list: T[], value: T): T[] => {
-    return list.includes(value)
-      ? // filter для иммутабельного изменения, то есть наша функция всегда возвращает новый массив не изменяя исходный
-        list.filter((item) => item !== value)
-      : [...list, value];
+  const config = FILTER_CONFIGS[category];
+
+  // универсальная функция обновления фильтра
+  // key - имя поля в сторе (colors, sizes, minPrice и так далее)
+  // value - новое значение
+  const updateFilter = (key: keyof typeof filters, value: string[] | number | boolean | undefined) => {
+    dispatch(updateFilters({ [key]: value, category }));
   };
 
-  /**
-   * @param category - категория по которой кликнули
-   */
-  const handleCategoryChange = (category: Category) => {
-    const newCategories = toggleValue(filters.categories, category);
-
-    // отправляем обновление фильтров в редакс
-    dispatch(
-      updateFilters({
-        categories: newCategories,
-      })
-    );
-  };
 
   return (
     <div className={styles.filterPanel} aria-labelledby="filters-title">
       <h2 className={styles.filterPanel__title} id="filters-title">
         Фильтры
       </h2>
-      <fieldset className={styles.filterPanel__group}>
-        <legend className={styles.filterPanel__legend}>Категории</legend>
-        <ul className={styles.filterPanel__list}>
-          {CATEGORIES.map((category, categoryId) => {
-            const inputId = `category-${category}`;
 
-            return (
-              <li className={styles.filterPanel__item} key={categoryId}>
-                <input
-                  type="checkbox"
-                  id={inputId}
-                  checked={filters.categories.includes(category)} // чекбокс отмечен если категория есть в редаксе
-                  onChange={() => handleCategoryChange(category)}
-                  className={styles.filterPanel__checkbox}
-                />
-                <label htmlFor={inputId} className={styles.filterPanel__label}>
-                  {category}
-                </label>
-              </li>
-            );
-          })}
-        </ul>
-      </fieldset>
+      <FilterCheckboxGroup
+        legend="Категории товаров"
+        options={config.fabrics}
+        selected={filters.fabrics}
+        name="fabric"
+        onChange={(values) => updateFilter("fabrics", values)}
+      />
+
+      <FilterCheckboxGroup
+        legend="Цвета"
+        options={config.colors}
+        selected={filters.colors}
+        name="color"
+        onChange={(values) => updateFilter("colors", values)}
+      />
+
+      <FilterCheckboxGroup
+        legend="Размеры"
+        options={config.sizes}
+        selected={filters.sizes}
+        name="size"
+        onChange={(values) => updateFilter("sizes", values)}
+      />
     </div>
   );
 };
