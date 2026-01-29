@@ -4,6 +4,14 @@ import { client, urlFor, type SanityImage } from "./sanityClient";
 import type { Slide } from "@/redux/slider/types";
 
 // типы для разных схем
+// тип для конфига фильтров
+type FilterConfig = {
+  category: string;
+  fabrics?: string[];
+  colors?: string[];
+  sizes?: string[];
+};
+
 // тип для продукта слайдера
 type SliderProduct = {
   _id: string;
@@ -24,10 +32,12 @@ type CatalogProduct = {
   image: SanityImage | null;
   price: number;
   oldPrice?: number;
-  gallery?: SanityImage[];
-  wbLink: string;
   active: boolean;
-  category: string; 
+  category: string;
+  fabrics?: string[];
+  sizes?: string[];
+  colors?: string[];
+  isNew?: boolean;
 };
 
 // тип для детальной страницы товара
@@ -121,7 +131,7 @@ export const productsApi = createApi({
 
     // получение отфильтрованных продуктов для каталога
     // используем тип catalogProduct для получения данных
-    getFilteredProducts: builder.query<Slide[], Filters>({
+    getFilteredProducts: builder.query<Omit<Slide, "description" | "link">[], Filters>({
       queryFn: async (filters) => {
         try {
           // запрашиваем продукты типа catalogProduct
@@ -142,6 +152,26 @@ export const productsApi = createApi({
             query += ` && price <= $maxPrice`;
           }
 
+          // добавляем фильтры по fabrics если заданы
+          if (filters.fabrics && filters.fabrics.length > 0) {
+            query += ` && count(fabrics[lower(@) in $fabricsLower]) > 0`;
+          }
+
+          // добавляем фильтры по sizes если заданы
+          if (filters.sizes && filters.sizes.length > 0) {
+            query += ` && count(sizes[lower(@) in $sizesLower]) > 0`;
+          }
+
+          // добавляем фильтры по colors если заданы
+          if (filters.colors && filters.colors.length > 0) {
+            query += ` && count(colors[lower(@) in $colorsLower]) > 0`;
+          }
+
+          // добавляем фильтр по isNew если задан
+          if (filters.isNew !== undefined) {
+            query += ` && isNew == $isNew`;
+          }
+
           // указываем поля для возврата
           query += `]{
         _id,
@@ -149,27 +179,35 @@ export const productsApi = createApi({
         image,
         price,
         oldPrice,
-        gallery,
-        wbLink
+        fabrics,
+        sizes,
+        colors,
+        isNew
       }`;
 
           // выполняем запрос к sanity
           const sanityProducts: CatalogProduct[] = await client.fetch(
             query,
-            filters
+            {
+              category: filters.category,
+              minPrice: filters.minPrice,
+              maxPrice: filters.maxPrice,
+              fabricsLower: filters.fabrics?.map(f => f.toLowerCase()),
+              sizesLower: filters.sizes?.map(s => s.toLowerCase()),
+              colorsLower: filters.colors?.map(c => c.toLowerCase()),
+              isNew: filters.isNew,
+            }
           );
 
           // преобразуем данные в формат карточек товаров
           // карточки используются в каталоге товаров
-          const products: Slide[] = sanityProducts.map((product) => {
+          const products: Omit<Slide, "description" | "link">[] = sanityProducts.map((product) => {
             return {
               id: product._id,
               title: product.title,
-              description: "", // описание не используется в карточках
               imageUrl: urlFor(product.image) || "",
               newPrice: product.price,
               oldPrice: product.oldPrice,
-              link: product.wbLink,
             };
           });
 
@@ -178,6 +216,37 @@ export const productsApi = createApi({
           return { data: products };
         } catch (e) {
           // обработка ошибок при получении данных
+          return {
+            error: {
+              message: e instanceof Error ? e.message : "Unknown error",
+            },
+          };
+        }
+      },
+    }),
+
+    // получение конфигов фильтров
+    // получаем настройки фильтров для каждой категории
+    getFilterConfigs: builder.query<{ [key: string]: { fabrics: string[], colors: string[], sizes: string[] } }, void>({
+      queryFn: async () => {
+        try {
+          // запрашиваем все конфиги фильтров
+          const configs: FilterConfig[] = await client.fetch(`*[_type == "filterConfig"]{ category, fabrics, colors, sizes }`);
+
+          // преобразуем в объект с категориями как ключами
+          const result: { [key: string]: { fabrics: string[], colors: string[], sizes: string[] } } = {};
+          configs.forEach((config: FilterConfig) => {
+            result[config.category] = {
+              fabrics: config.fabrics || [],
+              colors: config.colors || [],
+              sizes: config.sizes || [],
+            };
+          });
+
+          // возвращаем успешный результат
+          return { data: result };
+        } catch (e) {
+          // обработка ошибок
           return {
             error: {
               message: e instanceof Error ? e.message : "Unknown error",
@@ -278,5 +347,6 @@ export const productsApi = createApi({
 export const {
   useGetProductsQuery, // для слайдера
   useGetFilteredProductsQuery, // для каталога с фильтрами
+  useGetFilterConfigsQuery, // для конфигов фильтров
   useGetProductByIdQuery, // для детальной страницы
 } = productsApi;

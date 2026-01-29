@@ -2,7 +2,6 @@ import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { Filters, FiltersState } from "./types";
 
 const initialFilters: Filters = {
-  categories: [],
   fabrics: [],
   sizes: [],
   colors: [],
@@ -10,6 +9,7 @@ const initialFilters: Filters = {
   maxPrice: undefined,
   isNew: undefined,
   sortBy: undefined,
+  category: undefined,
 };
 
 const initialState: FiltersState = {
@@ -20,9 +20,6 @@ const filtersSlice = createSlice({
   name: "filters",
   initialState,
   reducers: {
-    setCategories: (state, action: PayloadAction<string[]>) => {
-      state.filters.categories = action.payload;
-    },
 
     setFabrics: (state, action: PayloadAction<string[]>) => {
         state.filters.fabrics = action.payload
@@ -50,6 +47,10 @@ const filtersSlice = createSlice({
 
     setSortBy: (state, action: PayloadAction<Filters['sortBy']>) => {
         state.filters.sortBy = action.payload
+    },
+
+    setCategories: (state, action: PayloadAction<string | undefined>) => {
+      state.filters.category = action.payload;
     },
 
     // Partial делает все поля опциональными, чтобы при изменении одного фильтра, не приходилось передавать и остальные неопциональные параметры

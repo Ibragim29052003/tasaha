@@ -1,40 +1,9 @@
 import { useAppDispatch, useAppSelector } from "@/redux/store";
 import styles from "./FilterPanel.module.scss";
 import { selectFilters } from "@/redux/filter/selectors";
-import { updateFilters } from "@/redux/filter/slice";
+import { updateFilters, clearFilters } from "@/redux/filter/slice";
 import FilterCheckboxGroup from "./FilterCheckboxGroup/FilterCheckboxGroup";
-
-const FILTER_CONFIGS = {
-  women: {
-    fabrics: [
-      "платья",
-      "костюмы",
-      "блузки",
-      "юбки",
-      "платье-халат",
-      "платье со штанами",
-    ] as const,
-    colors: ["красный", "розовый", "черный", "белый", "синий", "бежевый"] as const,
-    sizes: ["XS", "S", "M", "L", "XL", "42", "44", "46", "48"] as const,
-  },
-  men: {
-    fabrics: ["рубашки", "брюки", "костюмы", "пиджаки", "джинсы", "поло"] as const,
-    colors: ["синий", "серый", "черный", "белый", "коричневый", "зеленый"] as const,
-    sizes: ["S", "M", "L", "XL", "48", "50", "52", "54"] as const,
-  },
-  children: {
-    fabrics: ["платья", "шорты", "футболки", "джинсы", "пижамы", "комбинезоны"] as const,
-    colors: [
-      "розовый",
-      "голубой",
-      "желтый",
-      "зеленый",
-      "красный",
-      "фиолетовый",
-    ] as const,
-    sizes: ["98", "104", "110", "116", "122", "128", "134"] as const,
-  },
-} as const;
+import { useGetFilterConfigsQuery } from "@/sanity/productsApi";
 
 // category определяет, какие именно фильтры будут показаны
 interface FilterPanelProps {
@@ -47,15 +16,21 @@ const FilterPanel = ({ category }: FilterPanelProps) => {
   // получаем данные из редакса
   const filters = useAppSelector(selectFilters);
 
-  const config = FILTER_CONFIGS[category];
+  // получаем конфиги фильтров из Sanity
+  const { data: configs } = useGetFilterConfigsQuery();
+
+  // получаем конфиг для текущей категории, или пустой объект если нет данных
+  const config = configs?.[category] || { fabrics: [], colors: [], sizes: [] };
 
   // универсальная функция обновления фильтра
   // key - имя поля в сторе (colors, sizes, minPrice и так далее)
   // value - новое значение
-  const updateFilter = (key: keyof typeof filters, value: string[] | number | boolean | undefined) => {
-    dispatch(updateFilters({ [key]: value, category }));
+  const updateFilter = (
+    key: keyof typeof filters,
+    value: string[] | number | boolean | undefined
+  ) => {
+    dispatch(updateFilters({ [key]: value }));
   };
-
 
   return (
     <div className={styles.filterPanel} aria-labelledby="filters-title">
@@ -86,6 +61,14 @@ const FilterPanel = ({ category }: FilterPanelProps) => {
         name="size"
         onChange={(values) => updateFilter("sizes", values)}
       />
+
+      <button
+        className={styles.filterPanel__clear}
+        onClick={() => dispatch(clearFilters())}
+        type="button"
+      >
+        Очистить фильтры
+      </button>
     </div>
   );
 };
