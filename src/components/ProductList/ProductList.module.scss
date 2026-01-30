@@ -1,0 +1,25 @@
+@use "../../shared/scss/helpers/" as *;
+
+
+.product-list {
+  margin-top: 40px;
+}
+
+.product-list__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 16px;
+  }
+}
+
+.product-list__item {
+  display: flex;
+}
