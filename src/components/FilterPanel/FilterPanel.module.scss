@@ -1,1 +1,37 @@
 @use "../../shared/scss/helpers/" as *;
+
+.filterPanel {
+  background: var(--color-extra-light-gray);
+  border-radius: rem(14);
+  padding: rem(20);
+  display: flex;
+  flex-direction: column;
+  gap: rem(22);
+
+  &__title {
+    font-size: rem(20);
+    font-family: var(--font-family-CeraPro-Bold);
+    margin: 0;
+  }
+
+  &__clear {
+    margin-top: rem(10);
+    padding: rem(12);
+    border-radius: rem(10);
+    border: var(--border);
+    background: var(--color-white);
+    font-weight: 500;
+    cursor: pointer;
+    transition: background .2s;
+
+    &:hover {
+      background: var(--color-dark-el-gray);
+    }
+  }
+
+  @include mobile {
+    background: var(--color-white);
+    border-radius: 0;
+    padding: rem(16);
+  }
+}

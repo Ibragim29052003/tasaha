@@ -8,8 +8,7 @@ import {
   useGetProductsQuery,
 } from "@/sanity/productsApi";
 import Spiner from "@/components/Spiner/Spiner";
-import ProductList from "@/components/ProductList/ProductList";
-import FilterPanel from "@/components/FilterPanel/FilterPanel";
+import CatalogLayout from "@/components/CatalogLayout/CatalogLayout";
 import { selectFilters } from "@/redux/filter/selectors";
 
 const WomenPage: FC = () => {
@@ -43,8 +42,11 @@ const WomenPage: FC = () => {
   return (
     <div className={styles.container}>
       <Slider />
-      <FilterPanel category="women" />
-      <ProductList products={products || []} loading={productsLoading} />
+      <CatalogLayout
+        category="women"
+        products={products || []}
+        loading={productsLoading}
+      />
     </div>
   );
 };

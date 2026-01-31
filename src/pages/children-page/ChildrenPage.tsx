@@ -1,30 +1,50 @@
 import { useEffect, type FC } from "react";
 import styles from './ChildrenPage.module.scss'
-import { useAppDispatch } from "@/redux/store";
+import { useAppDispatch, useAppSelector } from "@/redux/store";
 import { setSlides } from "@/redux/slider/slice";
 import Slider from "@/features/slider/Slider";
-import { useGetProductsQuery } from "@/sanity/productsApi";
+import { useGetFilteredProductsQuery, useGetProductsQuery } from "@/sanity/productsApi";
 import Spiner from "@/components/Spiner/Spiner";
+import { selectFilters } from "@/redux/filter/selectors";
+import CatalogLayout from "@/components/CatalogLayout/CatalogLayout";
 
 const ChildrenPage: FC = () => {
   const dispatch = useAppDispatch();
 
-  // получаем продукты с Sanity для категории "children"
-  const { data: slides, isLoading, error } = useGetProductsQuery("children");
+    // получаем данные из редакса
+    const filters = useAppSelector(selectFilters);
+
+
+  const {
+    data: products,
+    isLoading: productsLoading,
+    error: productsError,
+  } = useGetFilteredProductsQuery({ ...filters, category: "children" });
+
+  // получаем продукты с Sanity
+  const {
+    data: slides,
+    isLoading: slidesLoading,
+    error: slidesError,
+  } = useGetProductsQuery("children");
 
   useEffect(() => {
-    if (!isLoading && slides) {
+    if (!slidesLoading && slides) {
       dispatch(setSlides(slides));
     }
-  }, [dispatch, slides, isLoading]);
+  }, [dispatch, slides, slidesLoading]);
 
-  if (isLoading) return <Spiner />;
-  if (error) return <div>Ошибка загрузки товаров</div>;
+  if (slidesLoading) return <Spiner />;
+  if (slidesError || productsError) return <div>Ошибка загрузки товаров</div>;
 
   return (
-    <div className={styles.container}> 
+    <div className={styles.container}>
       <Slider />
-      <p>Страница детских товаров</p>
+      <CatalogLayout
+        category="children"
+        products={products || []}
+        loading={productsLoading}
+      />
     </div>
   );
 };

@@ -1,0 +1,83 @@
+@use "../../shared/scss/helpers/" as *;
+
+.catalog {
+  &__mobileBar {
+    display: none;
+  }
+
+  &__body {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: rem(28);
+  }
+
+  &__sidebar {
+    position: sticky;
+    top: rem(20);
+    height: fit-content;
+  }
+
+  &__content {
+    display: flex;
+    flex-direction: column;
+  }
+
+
+  &__filterButton {
+    padding: rem(10) rem(16);
+    border-radius: rem(22);
+    background: var(--color-black);
+    color: var(--color-white);
+    border: none;
+    font-weight: 600;
+  }
+
+
+  &__drawer {
+    position: fixed;
+    inset: 0;
+    background: var(--color-white);
+    z-index: 100;
+    transform: translateX(100%);
+    transition: transform .3s ease;
+    overflow-y: auto;
+
+    &_open {
+      transform: translateX(0);
+    }
+  }
+
+  &__drawerHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: rem(18);
+    border-bottom: var(--border);
+    font-weight: 600;
+  }
+
+
+  @include mobile {
+    &__body {
+      grid-template-columns: 1fr;
+    }
+
+    &__sidebar {
+      display: none;
+    }
+
+    &__mobileBar {
+      display: flex;
+      gap: rem(12);
+      margin-bottom: rem(16);
+
+      > * {
+        flex: 1;
+      }
+    }
+
+    &__content > :global(.sortPanel) {
+      display: none;
+    }
+  }
+}

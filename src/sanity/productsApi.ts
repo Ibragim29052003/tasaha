@@ -185,6 +185,16 @@ export const productsApi = createApi({
         isNew
       }`;
 
+          // добавляем сортировку
+          if (filters.sortBy === "price_asc") {
+            query += ` | order(price asc)`;
+          } else if (filters.sortBy === "price_desc") {
+            query += ` | order(price desc)`;
+          } else if (filters.sortBy === "new") {
+            // Для сортировки по новинкам, сначала сортируем по isNew=true, потом по дате создания
+            query += ` | order(isNew desc, _createdAt desc)`;
+          }
+
           // выполняем запрос к sanity
           const sanityProducts: CatalogProduct[] = await client.fetch(
             query,

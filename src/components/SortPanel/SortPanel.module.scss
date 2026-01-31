@@ -1,0 +1,79 @@
+@use "../../shared/scss/helpers/" as *;
+.sortPanel {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: rem(20);
+  position: relative;
+
+  &__label {
+    display: flex;
+    align-items: center;
+    gap: rem(10);
+    font-size: rem(15);
+  }
+
+  &__customSelect {
+    position: relative;
+    width: 200px; //////////////////////////////
+    border: var(--border);
+    border-radius: rem(22);
+    background: var(--color-white);
+    cursor: pointer;
+    padding: rem(8) rem(14);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    user-select: none;
+
+    &:focus {
+      outline: 2px solid var(--color-black);
+    }
+
+    &_open {
+      .sortPanel__icon {
+        transform: rotate(180deg);
+      }
+    }
+  }
+
+  &__selected {
+    font-size: rem(14);
+  }
+
+  &__icon {
+    font-size: rem(12);
+    transition: transform 0.2s ease;
+  }
+
+  &__options {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    margin: 0;
+    padding: rem(4) 0;
+    list-style: none;
+    border: var(--border);
+    border-radius: rem(8);
+    background: var(--color-white);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    z-index: 10;
+    max-height: rem(200);
+    overflow-y: auto;
+  }
+
+  &__option {
+    padding: rem(8) rem(14);
+    cursor: pointer;
+    &:hover, &_active {
+      background: var(--color-gray-light);
+    }
+  }
+
+  @include mobile {
+    justify-content: stretch;
+    &__customSelect {
+      width: 60%;
+    }
+  }
+}

@@ -1,0 +1,42 @@
+@use "../../../shared/scss/helpers/" as *;
+
+.filterCheckbox {
+  &__group {
+    border: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  &__legend {
+    font-size: rem(15);
+    font-weight: 600;
+    margin-bottom: rem(12);
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: rem(10);
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: rem(10);
+  }
+
+  &__checkbox {
+    @include square(rem(18));
+    cursor: pointer;
+    accent-color: var(--color-black);
+  }
+
+  &__label {
+    font-size: rem(14);
+    cursor: pointer;
+    user-select: none;
+  }
+}
