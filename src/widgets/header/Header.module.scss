@@ -12,19 +12,24 @@
 }
 
 .header {
-  position: fixed;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100%;
-  font-family: var(--font-family-CeraPro-Regular);
-  z-index: 100;
   background-color: var(--color-white);
+
+  &__fixed {
+    position: fixed;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100vw;
+    font-family: var(--font-family-CeraPro-Regular);
+    z-index: 100;
+    background-color: var(--color-white);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+  }
 
   &__nav {
     @include flex-center;
     justify-content: space-between;
-    border-bottom: rem(0.3) solid var(--color-light-gray);
+    // border-bottom: rem(0.3) solid var(--color-light-gray);
     padding-block: rem(20) rem(10);
 
     @include mobile-above {
@@ -39,9 +44,9 @@
 
     &_text {
       font-size: fluid(26, 20);
-      font-family: var(--font-family-v_Calligraphic421BT);
+      // font-family: var(--font-family-v_Calligraphic421BT);
+      font-family: var(--font-family-CeraPro-Regular);
       transition: color var(--transition-duration);
-      font-weight: 700;
     }
 
     &_logo {

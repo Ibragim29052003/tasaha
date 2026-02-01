@@ -46,11 +46,12 @@ const Header: FC = () => {
     };
     const handleClickOutside = (event: MouseEvent) => {
       if (
-        (listRef.current && !listRef.current.contains(event.target as Node)) && // если был клик вне списка
-        (buttonRef.current &&
-          !buttonRef.current.contains(event.target as Node)) && // если был клик вне кнопки
-        (burgerRef.current &&
-          !burgerRef.current.contains(event.target as Node)) // если был клик вне бургера
+        listRef.current &&
+        !listRef.current.contains(event.target as Node) && // если был клик вне списка
+        buttonRef.current &&
+        !buttonRef.current.contains(event.target as Node) && // если был клик вне кнопки
+        burgerRef.current &&
+        !burgerRef.current.contains(event.target as Node) // если был клик вне бургера
       ) {
         setIsCategoriesOpen(false);
         setMenuOpen(false);
@@ -82,81 +83,104 @@ const Header: FC = () => {
   }, [isCategoriesOpen, currentPath]);
 
   return (
-    <header className={`${styles.header} container`}>
-      <nav className={styles.header__nav} role="navigation">
-        <Link
-          to="/"
-          aria-label="Вернуться на главную страницу"
-          className={styles.header__logo}
-        >
-          <Logo className={styles.header__logo_logo} />
-          <p className={styles.header__logo_text}>TaSaHa</p>
-        </Link>
+    <header className={styles.header}>
+      <div className={styles.header__fixed}>
+    <div className="container">
+          <nav className={styles.header__nav} role="navigation">
+          <Link
+            to="/"
+            aria-label="Вернуться на главную страницу"
+            className={styles.header__logo}
+          >
+            <Logo className={styles.header__logo_logo} />
+            <p className={styles.header__logo_text}>TaSaHa</p>
+          </Link>
 
-        <ul
-          className={`${styles.header__list} ${
-            menuOpen ? styles.header__list_open : ""
-          }`}
-          role={menuOpen ? "menu" : undefined}
-          aria-hidden={!menuOpen}
-        >
-          {navItems.map((item, itemId) => (
-            <li key={itemId} className={styles.header__list_item}>
-              {item.text === "Главная" ? (
-                <button
-                  className={`${styles.header__expandable} ${
-                    isMainActive ? styles.header__expandable_active : ""
-                  }`}
-                  onClick={() => setIsCategoriesOpen(!isCategoriesOpen)}
-                  aria-expanded={isCategoriesOpen}
-                  aria-controls="categories-list"
-                  aria-haspopup="menu" // указывает, что кнопка открывает меню
-                  ref={buttonRef}
-                >
-                  {item.text}
-                  <Arrow
-                    className={`${styles.header__expandable_icon} ${
-                      isCategoriesOpen
-                        ? styles.header__expandable_icon_open
+          <ul
+            className={`${styles.header__list} ${
+              menuOpen ? styles.header__list_open : ""
+            }`}
+            role={menuOpen ? "menu" : undefined}
+            aria-hidden={!menuOpen}
+          >
+            {navItems.map((item, itemId) => (
+              <li key={itemId} className={styles.header__list_item}>
+                {item.text === "Главная" ? (
+                  <button
+                    className={`${styles.header__expandable} ${
+                      isMainActive ? styles.header__expandable_active : ""
+                    }`}
+                    onClick={() => setIsCategoriesOpen(!isCategoriesOpen)}
+                    aria-expanded={isCategoriesOpen}
+                    aria-controls="categories-list"
+                    aria-haspopup="menu" // указывает, что кнопка открывает меню
+                    ref={buttonRef}
+                  >
+                    {item.text}
+                    <Arrow
+                      className={`${styles.header__expandable_icon} ${
+                        isCategoriesOpen
+                          ? styles.header__expandable_icon_open
+                          : ""
+                      } `}
+                    />
+                  </button>
+                ) : (
+                  <Link
+                    to={item.link || "#"}
+                    className={`${styles.header__list_link} ${
+                      currentPath === item.link
+                        ? styles.header__list_link_active
                         : ""
-                    } `}
+                    }`}
+                    aria-label={`Перейти к странице ${item.text}`}
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    {item.text}
+                  </Link>
+                )}
+                {item.text === "Главная" && (
+                  <DropdownMenu
+                    ref={listRef}
+                    isOpen={isCategoriesOpen}
+                    categories={categories}
+                    currentPath={currentPath}
+                    onClose={() => {
+                      setIsCategoriesOpen(false);
+                      setMenuOpen(false);
+                    }}
                   />
-                </button>
-              ) : (
-                <Link
-                  to={item.link || "#"}
-                  className={`${styles.header__list_link} ${
-                    currentPath === item.link
-                      ? styles.header__list_link_active
-                      : ""
-                  }`}
-                  aria-label={`Перейти к странице ${item.text}`}
-                  onClick={() => setMenuOpen(false)}
+                )}
+              </li>
+            ))}
+            {menuOpen && (
+              <li className={styles.header__list_item}>
+                <a
+                  href="https://www.wildberries.ru/brands/310895408-tasaha"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`${styles.header__wb} ${styles.header__wb_menu}`}
                 >
-                  {item.text}
-                </Link>
-              )}
-              {item.text === "Главная" && (
-                <DropdownMenu
-                  ref={listRef}
-                  isOpen={isCategoriesOpen}
-                  categories={categories}
-                  currentPath={currentPath}
-                  onClose={() => {
-                    setIsCategoriesOpen(false);
-                    setMenuOpen(false);
-                  }}
-                />
-              )}
-            </li>
-          ))}
-          {menuOpen && (
-            <li className={styles.header__list_item}>
+                  <TransitionWB
+                    className={styles.header__wb_icon}
+                    aria-label="Иконка перехода на Wildberries"
+                  />
+                  <p className={styles.header__wb_text}>Перейти на WB</p>
+                </a>
+              </li>
+            )}
+          </ul>
+          <div className={styles.header__wb_search_wrapper}>
+            <Search
+              className={styles.header__search}
+              aria-label="Иконка поиска"
+            />
+            {!menuOpen && (
               <a
                 href="https://www.wildberries.ru/brands/310895408-tasaha"
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`${styles.header__wb} ${styles.header__wb_menu}`}
+                className={styles.header__wb}
               >
                 <TransitionWB
                   className={styles.header__wb_icon}
@@ -164,44 +188,25 @@ const Header: FC = () => {
                 />
                 <p className={styles.header__wb_text}>Перейти на WB</p>
               </a>
-            </li>
-          )}
-        </ul>
-        <div className={styles.header__wb_search_wrapper}>
-          <Search
-            className={styles.header__search}
-            aria-label="Иконка поиска"
-          />
-          {!menuOpen && (
-            <a
-              href="https://www.wildberries.ru/brands/310895408-tasaha"
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles.header__wb}
-            >
-              <TransitionWB
-                className={styles.header__wb_icon}
-                aria-label="Иконка перехода на Wildberries"
-              />
-              <p className={styles.header__wb_text}>Перейти на WB</p>
-            </a>
-          )}
-        </div>
+            )}
+          </div>
 
-        <button
-          className={`${styles.header__burger} ${
-            menuOpen ? styles.header__burger_open : ""
-          }`}
-          onClick={() => setMenuOpen(!menuOpen)}
-          aria-label={menuOpen ? "Закрыть меню" : "Открыть меню"}
-          aria-expanded={menuOpen}
-          ref={burgerRef}
-        >
-          <span className={styles.header__burger_line}></span>
-          <span className={styles.header__burger_line}></span>
-          <span className={styles.header__burger_line}></span>
-        </button>
-      </nav>
+          <button
+            className={`${styles.header__burger} ${
+              menuOpen ? styles.header__burger_open : ""
+            }`}
+            onClick={() => setMenuOpen(!menuOpen)}
+            aria-label={menuOpen ? "Закрыть меню" : "Открыть меню"}
+            aria-expanded={menuOpen}
+            ref={burgerRef}
+          >
+            <span className={styles.header__burger_line}></span>
+            <span className={styles.header__burger_line}></span>
+            <span className={styles.header__burger_line}></span>
+          </button>
+        </nav>
+    </div>
+      </div>
     </header>
   );
 };

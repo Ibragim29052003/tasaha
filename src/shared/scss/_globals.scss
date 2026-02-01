@@ -59,6 +59,10 @@ p {
   --paragraphMarginBottom: #{rem(24)};
 }
 
+ul {
+    font-family: var(--font-family-CeraPro-Regular);
+}
+
 a,
 button,
 label,

@@ -8,7 +8,7 @@
   }
 
   &__legend {
-    font-size: rem(15);
+    font-size: fluid(20, 17);
     font-weight: 600;
     margin-bottom: rem(12);
   }
@@ -31,12 +31,29 @@
   &__checkbox {
     @include square(rem(18));
     cursor: pointer;
-    accent-color: var(--color-black);
+    accent-color: var(--color-lavender);
   }
 
   &__label {
-    font-size: rem(14);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
     cursor: pointer;
     user-select: none;
+    gap: rem(10);
+  }
+
+  &__count {
+    color: var(--color-light-gray);
+    font-weight: 500;
+  }
+
+  &__info {
+    @include flex-center;
+    justify-content: space-between;
+    width: 100%;
+    font-size: fluid(16, 14);
+    gap: rem(5);
   }
 }

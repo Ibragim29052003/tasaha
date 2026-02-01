@@ -4,7 +4,7 @@
   position: relative;
   width: 100%;
   height: fluid(500, 400);
-  margin-top: rem(120);
+  margin-block: rem(120) rem(40);
   overflow: hidden;
   perspective: rem(1200);
   background: linear-gradient(
@@ -18,7 +18,6 @@
 
   @include tablet {
     height: fluid(800, 500);
-    margin-top: rem(120);
   }
 
   @include mobile {

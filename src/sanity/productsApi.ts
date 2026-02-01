@@ -266,6 +266,94 @@ export const productsApi = createApi({
       },
     }),
 
+    // получение количества продуктов для каждого фильтра
+    // используется для отображения счетчиков рядом с фильтрами
+    getFilterCounts: builder.query<{
+      fabrics: Record<string, number>;
+      colors: Record<string, number>;
+      sizes: Record<string, number>;
+    }, {
+      category: string;
+      filters: Filters;
+    }>({
+      queryFn: async ({ category, filters }) => {
+        try {
+          // начальный запрос для получения всех активных продуктов в категории
+          let query = `*[_type == "catalogProduct" && active == true && category == $category]`;
+
+          // добавляем фильтры по цене если они заданы
+          if (filters.minPrice !== undefined) {
+            query += ` && price >= $minPrice`;
+          }
+
+          if (filters.maxPrice !== undefined) {
+            query += ` && price <= $maxPrice`;
+          }
+
+          // добавляем фильтры по isNew если задан
+          if (filters.isNew !== undefined) {
+            query += ` && isNew == $isNew`;
+          }
+
+          // выбираем только нужные поля для подсчета
+          query += `{ fabrics, colors, sizes }`;
+
+          // выполняем запрос к sanity
+          const products = await client.fetch(query, {
+            category,
+            minPrice: filters.minPrice,
+            maxPrice: filters.maxPrice,
+            isNew: filters.isNew,
+          });
+
+          // подсчитываем количество для каждого фильтра
+          const fabricCounts: Record<string, number> = {};
+          const colorCounts: Record<string, number> = {};
+          const sizeCounts: Record<string, number> = {};
+
+          // перебираем все продукты и считаем вхождения
+          products.forEach((product: { fabrics?: string[]; colors?: string[]; sizes?: string[] }) => {
+            // подсчет тканей
+            if (product.fabrics && Array.isArray(product.fabrics)) {
+              product.fabrics.forEach((fabric: string) => {
+                fabricCounts[fabric] = (fabricCounts[fabric] || 0) + 1;
+              });
+            }
+
+            // подсчет цветов
+            if (product.colors && Array.isArray(product.colors)) {
+              product.colors.forEach((color: string) => {
+                colorCounts[color] = (colorCounts[color] || 0) + 1;
+              });
+            }
+
+            // подсчет размеров
+            if (product.sizes && Array.isArray(product.sizes)) {
+              product.sizes.forEach((size: string) => {
+                sizeCounts[size] = (sizeCounts[size] || 0) + 1;
+              });
+            }
+          });
+
+          // возвращаем результат
+          return {
+            data: {
+              fabrics: fabricCounts,
+              colors: colorCounts,
+              sizes: sizeCounts
+            }
+          };
+        } catch (e) {
+          // обработка ошибок
+          return {
+            error: {
+              message: e instanceof Error ? e.message : "Unknown error",
+            },
+          };
+        }
+      },
+    }),
+
     // детальная страница товара
     // используем тип detailProduct для получения всех данных
     getProductById: builder.query<
@@ -358,5 +446,6 @@ export const {
   useGetProductsQuery, // для слайдера
   useGetFilteredProductsQuery, // для каталога с фильтрами
   useGetFilterConfigsQuery, // для конфигов фильтров
+  useGetFilterCountsQuery, // для подсчета товаров по фильтрам
   useGetProductByIdQuery, // для детальной страницы
 } = productsApi;

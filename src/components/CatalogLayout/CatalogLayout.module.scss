@@ -15,13 +15,13 @@
     position: sticky;
     top: rem(20);
     height: fit-content;
+    font-family: var(--font-family-CeraPro-Regular);
   }
 
   &__content {
     display: flex;
     flex-direction: column;
   }
-
 
   &__filterButton {
     padding: rem(10) rem(16);
@@ -32,18 +32,18 @@
     font-weight: 600;
   }
 
-
   &__drawer {
     position: fixed;
     inset: 0;
     background: var(--color-white);
     z-index: 100;
     transform: translateX(100%);
-    transition: transform .3s ease;
+    transition: transform 0.3s ease;
     overflow-y: auto;
 
     &_open {
       transform: translateX(0);
+      overscroll-behavior: contain;
     }
   }
 
@@ -54,8 +54,41 @@
     padding: rem(18);
     border-bottom: var(--border);
     font-weight: 600;
-  }
 
+    &_close {
+      @include square(rem(24));
+      padding: 0;
+      background-color: transparent;
+      border: none;
+      cursor: pointer;
+      color: var(--color-black);
+      @include hover {
+        color: var(--color-accent);
+      }
+    }
+
+    &_line {
+      display: block;
+      width: 100%;
+      height: rem(2);
+      background-color: currentColor;
+      border-radius: 1rem;
+      transition-duration: var(--transition-duration);
+
+      &:first-child {
+        transform: rotate(45deg);
+        @include abs-center;
+      }
+
+      &:last-child {
+        transform: rotate(-45deg);
+      }
+    }
+
+    &_button {
+      @include wb-button;
+    }
+  }
 
   @include mobile {
     &__body {
@@ -69,8 +102,7 @@
     &__mobileBar {
       display: flex;
       gap: rem(12);
-      margin-bottom: rem(16);
-
+      padding-top: 2rem;
       > * {
         flex: 1;
       }

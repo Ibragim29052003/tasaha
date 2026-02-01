@@ -5,7 +5,7 @@ interface FilterCheckboxGroupProps<T extends string> {
   options: readonly T[]; // все возможные варианты
   selected: T[]; // выбранные значения
   onChange: (values: T[]) => void; // колбэк при изменении
-  name: string; // для генерации уникальных id
+  counts?: Record<string, number>; // добавляем опциональное поле для подсчетов
 }
 
 const FilterCheckboxGroup = <T extends string>({
@@ -13,9 +13,8 @@ const FilterCheckboxGroup = <T extends string>({
   options,
   selected,
   onChange,
-  name,
+  counts = {}, // по умолчанию пустой объект
 }: FilterCheckboxGroupProps<T>) => {
-
   // если значение есть — удаляем, если значения нет — добавляем (такая логика типична для чекбоксов)
   const toggleValue = (value: T) => {
     return selected.includes(value)
@@ -25,30 +24,32 @@ const FilterCheckboxGroup = <T extends string>({
   };
 
   return (
-        <fieldset className={styles.filterCheckbox__group}>
-            <legend className={styles.filterCheckbox__legend}>{legend}</legend>
-            <ul className={styles.filterCheckbox__list}>
-              {options.map((option) => {
-                const inputId = `${name}-${option}`;
-    
-                return (
-                  <li className={styles.filterCheckbox__item} key={option}>
-                    <input
-                      type="checkbox"
-                      id={inputId}
-                      checked={selected.includes(option)} // чекбокс отмечен если категория есть в редаксе
-                      onChange={() => { onChange(toggleValue(option))}}
-                      className={styles.filterCheckbox__checkbox}
-                    />
-                    <label htmlFor={inputId} className={styles.filterCheckbox__label}>
-                      {option}
-                    </label>
-                  </li>
-                );
-              })}
-            </ul>
-          </fieldset>
-  )
+    <fieldset className={styles.filterCheckbox__group}>
+      <legend className={styles.filterCheckbox__legend}>{legend}</legend>
+      <ul className={styles.filterCheckbox__list}>
+        {options.map((option) => {
+          return (
+            <li className={styles.filterCheckbox__item} key={option}>
+              <label className={styles.filterCheckbox__label}>
+                <input
+                  type="checkbox"
+                  className={styles.filterCheckbox__checkbox}
+                  checked={selected.includes(option)}
+                  onChange={() => onChange(toggleValue(option))}
+                />
+                <div className={styles.filterCheckbox__info}>
+                  <span className={styles.filterCheckbox__text}>{option}</span>
+                  <span className={styles.filterCheckbox__count}>
+                    {counts[option] ?? 0}
+                  </span>
+                </div>
+              </label>
+            </li>
+          );
+        })}
+      </ul>
+    </fieldset>
+  );
 };
 
 export default FilterCheckboxGroup;

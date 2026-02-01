@@ -3,7 +3,7 @@ import styles from "./Footer.module.scss"
 
 const Footer: FC = () => {
   return (
-    <footer className={styles.footer}>Небльшой текст для проверки шрифта</footer>
+    <footer className={styles.footer}></footer>
   )
 }
 
