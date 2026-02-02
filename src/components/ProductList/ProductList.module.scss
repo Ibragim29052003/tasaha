@@ -1,8 +1,6 @@
 @use "../../shared/scss/helpers/" as *;
 
 .productList {
-  margin-top: rem(32);
-
   &__grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -17,8 +15,23 @@
     }
 
     @include mobile {
-      grid-template-columns: repeat(2, 1fr);
       gap: rem(14);
+    }
+
+    @include mobile-s {
+      gap: rem(4);
+    }
+  }
+
+  &__wide {
+    grid-template-columns: repeat(4, 1fr);
+
+    @include tablet {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    @include mobile {
+      grid-template-columns: repeat(2, 1fr);
     }
   }
 
@@ -41,18 +54,16 @@
   &__empty {
     text-align: center;
     padding: rem(60) rem(20);
-  
 
     &_title {
       font-size: fluid(25, 20);
       font-weight: 600;
       margin-bottom: rem(8);
     }
-    
+
     &_text {
       font-size: fluid(18, 15);
       color: var(--color-medium-gray);
-
     }
   }
 }

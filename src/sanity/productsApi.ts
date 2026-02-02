@@ -266,8 +266,6 @@ export const productsApi = createApi({
       },
     }),
 
-    // получение количества продуктов для каждого фильтра
-    // используется для отображения счетчиков рядом с фильтрами
     getFilterCounts: builder.query<{
       fabrics: Record<string, number>;
       colors: Record<string, number>;
@@ -278,64 +276,64 @@ export const productsApi = createApi({
     }>({
       queryFn: async ({ category, filters }) => {
         try {
-          // начальный запрос для получения всех активных продуктов в категории
-          let query = `*[_type == "catalogProduct" && active == true && category == $category]`;
+          let query = `*[_type == "catalogProduct" && active == true && category == $category`;
 
-          // добавляем фильтры по цене если они заданы
           if (filters.minPrice !== undefined) {
             query += ` && price >= $minPrice`;
           }
-
           if (filters.maxPrice !== undefined) {
             query += ` && price <= $maxPrice`;
           }
-
-          // добавляем фильтры по isNew если задан
           if (filters.isNew !== undefined) {
             query += ` && isNew == $isNew`;
           }
+          // добавляем фильтры по текущим выбранным значениям
+          if (filters.fabrics && filters.fabrics.length > 0) {
+            query += ` && count(fabrics[lower(@) in $fabricsLower]) > 0`;
+          }
+          if (filters.sizes && filters.sizes.length > 0) {
+            query += ` && count(sizes[lower(@) in $sizesLower]) > 0`;
+          }
+          if (filters.colors && filters.colors.length > 0) {
+            query += ` && count(colors[lower(@) in $colorsLower]) > 0`;
+          }
+          query += `]{ fabrics, colors, sizes }`;
 
-          // выбираем только нужные поля для подсчета
-          query += `{ fabrics, colors, sizes }`;
-
-          // выполняем запрос к sanity
           const products = await client.fetch(query, {
             category,
             minPrice: filters.minPrice,
             maxPrice: filters.maxPrice,
             isNew: filters.isNew,
+            fabricsLower: filters.fabrics?.map(f => f.toLowerCase()),
+            sizesLower: filters.sizes?.map(s => s.toLowerCase()),
+            colorsLower: filters.colors?.map(c => c.toLowerCase()),
           });
 
-          // подсчитываем количество для каждого фильтра
           const fabricCounts: Record<string, number> = {};
           const colorCounts: Record<string, number> = {};
           const sizeCounts: Record<string, number> = {};
 
-          // перебираем все продукты и считаем вхождения
           products.forEach((product: { fabrics?: string[]; colors?: string[]; sizes?: string[] }) => {
-            // подсчет тканей
             if (product.fabrics && Array.isArray(product.fabrics)) {
               product.fabrics.forEach((fabric: string) => {
-                fabricCounts[fabric] = (fabricCounts[fabric] || 0) + 1;
+                const key = fabric.toLowerCase();
+                fabricCounts[key] = (fabricCounts[key] || 0) + 1;
               });
             }
-
-            // подсчет цветов
             if (product.colors && Array.isArray(product.colors)) {
               product.colors.forEach((color: string) => {
-                colorCounts[color] = (colorCounts[color] || 0) + 1;
+                const key = color.toLowerCase();
+                colorCounts[key] = (colorCounts[key] || 0) + 1;
               });
             }
-
-            // подсчет размеров
             if (product.sizes && Array.isArray(product.sizes)) {
               product.sizes.forEach((size: string) => {
-                sizeCounts[size] = (sizeCounts[size] || 0) + 1;
+                const key = size.toLowerCase();
+                sizeCounts[key] = (sizeCounts[key] || 0) + 1;
               });
             }
           });
 
-          // возвращаем результат
           return {
             data: {
               fabrics: fabricCounts,
@@ -344,7 +342,6 @@ export const productsApi = createApi({
             }
           };
         } catch (e) {
-          // обработка ошибок
           return {
             error: {
               message: e instanceof Error ? e.message : "Unknown error",
@@ -438,6 +435,36 @@ export const productsApi = createApi({
         }
       },
     }),
+
+    // получение диапазона цен для фильтрации
+    getPriceRange: builder.query<{ min: number; max: number }, string>({
+      queryFn: async (category) => {
+        try {
+          // запрашиваем минимальную и максимальную цену для заданной категории
+          const result = await client.fetch(
+            `{
+              "min": min(*[_type == "catalogProduct" && active == true && category == $category].price),
+              "max": max(*[_type == "catalogProduct" && active == true && category == $category].price)
+            }`,
+            { category }
+          );
+
+          // если результат пустой (нет товаров), возвращаем стандартный диапазон
+          if (result.min === null || result.max === null) {
+            return { data: { min: 0, max: 30000 } };
+          }
+
+          return { data: { min: result.min, max: result.max } };
+        } catch (e) {
+          // обработка ошибок
+          return {
+            error: {
+              message: e instanceof Error ? e.message : "Unknown error",
+            },
+          };
+        }
+      },
+    }),
   }),
 });
 
@@ -448,4 +475,11 @@ export const {
   useGetFilterConfigsQuery, // для конфигов фильтров
   useGetFilterCountsQuery, // для подсчета товаров по фильтрам
   useGetProductByIdQuery, // для детальной страницы
+  useGetPriceRangeQuery, // для получения диапазона цен
 } = productsApi;
+
+// Тип для диапазона цен
+export type PriceRange = {
+  min: number;
+  max: number;
+};

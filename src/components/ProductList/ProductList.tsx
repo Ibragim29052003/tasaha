@@ -7,9 +7,10 @@ import ProductCard from "../ProductCard/ProductCard";
 interface ProductListProps {
   products: Omit<Slide, "description" | "link">[]; // берем все поля кроме описания и ссылки (она будет на детальной странице)
   loading: boolean; // флаг загрузки
+  extraClassName?: string; // дополнительный класс
 }
 
-const ProductList: FC<ProductListProps> = ({ products, loading }) => {
+const ProductList: FC<ProductListProps> = ({ products, loading, extraClassName }) => {
   if (loading) {
     return(
     <div
@@ -44,7 +45,7 @@ const ProductList: FC<ProductListProps> = ({ products, loading }) => {
     aria-label="Список товаров"
     >
       <ul
-        className={styles.productList__grid}
+        className={`${styles.productList__grid} ${extraClassName || ''}`}
       >
          {products.map((product) => (
           <li

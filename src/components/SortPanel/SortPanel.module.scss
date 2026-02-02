@@ -30,7 +30,6 @@
 
   &__customSelect {
     position: relative;
-    min-width: rem(230);
     border: var(--border);
     border-radius: rem(22);
     background: var(--color-white);
@@ -57,6 +56,10 @@
       .sortPanel__icon {
         transform: rotate(180deg);
       }
+    }
+
+    @include mobile-above {
+      min-width: rem(230);
     }
   }
 

@@ -20,12 +20,13 @@
 
   &__buttons {
     @include flex-center;
-    gap: 1rem;
+    gap: rem(5);
     font-family: var(--font-family-CeraPro-Regular);
   }
 
-  &__clear, &__apply {
-        width: 100%;
+  &__clear,
+  &__apply {
+    width: 100%;
     font-weight: 500;
     font-size: rem(16);
     padding: rem(12);
@@ -40,6 +41,15 @@
 
     @include mobile-s {
       font-size: rem(14);
+    }
+  }
+
+  &__info {
+    display: grid;
+    gap: rem(30);
+    > :not(:last-child):not(.filterPanel__buttons) {
+      border-bottom: var(--border);
+      padding-bottom: rem(30);
     }
   }
 

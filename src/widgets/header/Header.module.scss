@@ -24,6 +24,11 @@
     z-index: 100;
     background-color: var(--color-white);
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+    transition: transform .3s ease;
+
+    &_hidden {
+      transform: translate(-50%, -100%);
+    }
   }
 
   &__nav {

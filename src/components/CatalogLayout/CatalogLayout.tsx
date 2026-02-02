@@ -1,11 +1,13 @@
 import { useState, type FC } from "react";
 import styles from "./CatalogLayout.module.scss";
+import ProductListStyles from "@/components/ProductList/ProductList.module.scss";
 import FilterPanel from "@/components/FilterPanel/FilterPanel";
 import ProductList from "@/components/ProductList/ProductList";
 import SortPanel from "@/components/SortPanel/SortPanel";
 import type { Slide } from "@/redux/slider/types";
 import useMediaQuery from "@/hooks/useMediaQuery";
 import useLockBodyScroll from "@/hooks/useLockBodyScroll";
+import Arrow from "@/shared/assets/icons/header/arrow-down.svg?react";
 
 type Category = "children" | "women" | "men";
 
@@ -21,6 +23,7 @@ const CatalogLayout: FC<CatalogLayoutProps> = ({
   category,
 }) => {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const [isFilterVisible, setIsFilterVisible] = useState(true);
   const isMobile = useMediaQuery("(max-width: 767.98px)");
 
   useLockBodyScroll(mobileFiltersOpen);
@@ -46,14 +49,55 @@ const CatalogLayout: FC<CatalogLayoutProps> = ({
         </div>
       )}
 
-      <div className={styles.catalog__body}>
-        <aside className={styles.catalog__sidebar}>
-          {!isMobile && <FilterPanel category={category} />}
-        </aside>
+      <div
+        className={`${styles.catalog__body} ${
+          !isFilterVisible ? styles.catalog__body_full : ""
+        }`}
+      >
+        <div className={styles.catalog__sidebar}>
+          {isFilterVisible && (
+            <button
+            className={styles.catalog__toggleButton}
+            aria-expanded={isFilterVisible}
+            onClick={() => setIsFilterVisible(!isFilterVisible)}
+          >
+            <Arrow
+              className={`${styles.catalog__toggleArrow} ${
+                !isFilterVisible ? styles.catalog__toggleArrow_open : ""
+              }`}
+            />
+            Скрыть фильтры
+          </button>
+          )}
+
+          {!isMobile && isFilterVisible && <FilterPanel category={category} />}
+        </div>
 
         <div className={styles.catalog__content}>
-          {!isMobile && <SortPanel />}
-          <ProductList products={products} loading={loading} />
+          {!isMobile && (
+            <div className={`${!isFilterVisible ? styles.catalog__top : styles.catalog__top_visible}`}>
+              {!isFilterVisible && (
+                <button
+                className={styles.catalog__toggleButton}
+                aria-expanded={isFilterVisible}
+                onClick={() => setIsFilterVisible(!isFilterVisible)}
+              >
+                <Arrow
+                  className={`${styles.catalog__toggleArrow} ${
+                    !isFilterVisible ? styles.catalog__toggleArrow_open : ""
+                  }`}
+                />
+                Показать фильтры
+              </button>
+              )}
+              <SortPanel />
+            </div>
+          )}
+          <ProductList
+            products={products}
+            loading={loading}
+            extraClassName={!isFilterVisible ? ProductListStyles.productList__wide : ""}
+          />
         </div>
       </div>
 
@@ -83,7 +127,12 @@ const CatalogLayout: FC<CatalogLayoutProps> = ({
           </button>
         </div>
 
-        {isMobile && <FilterPanel category={category} onApply={() => setMobileFiltersOpen(false)}/>}
+        {isMobile && (
+          <FilterPanel
+            category={category}
+            onApply={() => setMobileFiltersOpen(false)}
+          />
+        )}
       </div>
     </div>
   );

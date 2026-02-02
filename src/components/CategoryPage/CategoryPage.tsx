@@ -16,7 +16,7 @@ interface CategoryPageProps {
 const CategoryPage: FC<CategoryPageProps> = ({ category }) => {
   const dispatch = useAppDispatch();
   const filters = useAppSelector(selectFilters);
-const debouncedFilters = useDebounce(filters, 500)
+const debouncedFilters = useDebounce(filters, 300)
 
   const {
     data: products,

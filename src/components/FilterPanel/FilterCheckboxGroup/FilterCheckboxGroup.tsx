@@ -40,7 +40,7 @@ const FilterCheckboxGroup = <T extends string>({
                 <div className={styles.filterCheckbox__info}>
                   <span className={styles.filterCheckbox__text}>{option}</span>
                   <span className={styles.filterCheckbox__count}>
-                    {counts[option] ?? 0}
+                    {counts[option.toLowerCase()] ?? 0}
                   </span>
                 </div>
               </label>

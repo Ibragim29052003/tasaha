@@ -8,19 +8,55 @@
   &__body {
     display: grid;
     grid-template-columns: 1fr 2fr;
-    gap: rem(28);
+
+    &_full {
+      grid-template-columns:  1fr;
+    }
   }
 
   &__sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: rem(16);
     position: sticky;
     top: rem(20);
     height: fit-content;
     font-family: var(--font-family-CeraPro-Regular);
   }
 
+  &__toggleButton {
+    @include flex-center;
+    gap: rem(8);
+    padding: rem(10) rem(16);
+    border: 1px solid var(--color-dark-el-gray);
+    border-radius: rem(22);
+    background: var(--color-white);
+    color: var(--color-black);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-duration);
+    width: fit-content;
+
+    @include hover {
+      background: var(--color-black);
+      color: var(--color-white);
+      border-color: var(--color-black);
+    }
+  }
+
+  &__toggleArrow {
+    transition: transform var(--transition-duration);
+    transform: rotate(180deg);
+    
+    &_open {
+      transform: rotate(0);
+    }
+  }
+
   &__content {
     display: flex;
     flex-direction: column;
+    gap: rem(20);
   }
 
   &__filterButton {
@@ -100,9 +136,10 @@
     }
 
     &__mobileBar {
-      display: flex;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
       gap: rem(12);
-      padding-top: 2rem;
+      padding-block: 2rem;
       > * {
         flex: 1;
       }
@@ -110,6 +147,16 @@
 
     &__content > :global(.sortPanel) {
       display: none;
+    }
+  }
+
+  &__top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    &_visible {
+      justify-content: flex-end;
     }
   }
 }
