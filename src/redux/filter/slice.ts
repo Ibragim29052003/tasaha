@@ -14,6 +14,7 @@ const initialFilters: Filters = {
 
 const initialState: FiltersState = {
   filters: initialFilters,
+  currentPage: 1
 };
 
 const filtersSlice = createSlice({
@@ -53,6 +54,10 @@ const filtersSlice = createSlice({
       state.filters.category = action.payload;
     },
 
+    setCurrentPage: (state, action: PayloadAction<number>) => {
+      state.currentPage = action.payload
+    },
+
     // Partial делает все поля опциональными, чтобы при изменении одного фильтра, не приходилось передавать и остальные неопциональные параметры
     updateFilters: (state, action: PayloadAction<Partial<Filters>>) => {
         // берем старые фильтры -  ...state.filters
@@ -76,6 +81,7 @@ export const {
     setMaxPrice,
     setSortBy,
     setIsNew,
+    setCurrentPage,
     updateFilters,
     clearFilters
 } = filtersSlice.actions

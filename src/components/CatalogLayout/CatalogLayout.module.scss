@@ -10,7 +10,7 @@
     grid-template-columns: 1fr 2fr;
 
     &_full {
-      grid-template-columns:  1fr;
+      grid-template-columns: 1fr;
     }
   }
 
@@ -32,6 +32,7 @@
     border-radius: rem(22);
     background: var(--color-white);
     color: var(--color-black);
+    font-size: fluid(16, 12);
     font-weight: 500;
     cursor: pointer;
     transition: all var(--transition-duration);
@@ -47,7 +48,7 @@
   &__toggleArrow {
     transition: transform var(--transition-duration);
     transform: rotate(180deg);
-    
+
     &_open {
       transform: rotate(0);
     }

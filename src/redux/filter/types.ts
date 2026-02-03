@@ -11,4 +11,5 @@ export type Filters = {
 
 export interface FiltersState {
     filters: Filters;
+    currentPage: number;
 }
