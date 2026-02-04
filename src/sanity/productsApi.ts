@@ -443,8 +443,8 @@ export const productsApi = createApi({
           // запрашиваем минимальную и максимальную цену для заданной категории
           const result = await client.fetch(
             `{
-              "min": min(*[_type == "catalogProduct" && active == true && category == $category].price),
-              "max": max(*[_type == "catalogProduct" && active == true && category == $category].price)
+              "min": *[_type == "catalogProduct" && active == true && category == $category] | order(price asc)[0].price,
+              "max": *[_type == "catalogProduct" && active == true && category == $category] | order(price desc)[0].price
             }`,
             { category }
           );

@@ -1,6 +1,6 @@
 import { useState, type FC } from "react";
 import styles from "./CatalogLayout.module.scss";
-import ProductListStyles from "@/components/ProductList/ProductList.module.scss";
+import ProductGridStyles from "@/components/ProductList/ProductGrid/ProductGrid.module.scss";
 import FilterPanel from "@/components/FilterPanel/FilterPanel";
 import ProductList from "@/components/ProductList/ProductList";
 import SortPanel from "@/components/SortPanel/SortPanel";
@@ -96,7 +96,9 @@ const CatalogLayout: FC<CatalogLayoutProps> = ({
           <ProductList
             products={products}
             loading={loading}
-            extraClassName={!isFilterVisible ? ProductListStyles.productList__wide : ""}
+            extraClassName={!isFilterVisible ? ProductGridStyles.productGrid__wide : ""}
+            totalProducts={products.length}
+            isFilterVisible={isFilterVisible}
           />
         </div>
       </div>

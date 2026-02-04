@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect, type FC, type ChangeEvent } from 'react';
+import { useState, useRef, useCallback, useMemo, useEffect, type FC, type ChangeEvent } from 'react';
 import { useAppDispatch, useAppSelector } from '@/redux/store';
 import { updateFilters } from '@/redux/filter/slice';
 import { selectFilters } from '@/redux/filter/selectors';
@@ -14,22 +14,41 @@ const PriceRange: FC<PriceRangeProps> = ({ min, max }) => {
   const dispatch = useAppDispatch();
   const filters = useAppSelector(selectFilters);
 
-  // предыдущие валидные значения для восстановления
-  const [prevMinPrice, setPrevMinPrice] = useState<number>(() => {
-    return filters.minPrice !== undefined && filters.minPrice >= min && filters.minPrice <= max
-      ? filters.minPrice
-      : min;
-  });
+  // вычисляем текущие значения на основе Redux и props
+  const computedMinPrice = useMemo(() => {
+    if (filters.minPrice !== undefined && filters.minPrice >= min && filters.minPrice <= max) {
+      return filters.minPrice;
+    }
+    return min;
+  }, [min, max, filters.minPrice]);
 
-  const [prevMaxPrice, setPrevMaxPrice] = useState<number>(() => {
-    return filters.maxPrice !== undefined && filters.maxPrice >= min && filters.maxPrice <= max
-      ? filters.maxPrice
-      : max;
-  });
+  const computedMaxPrice = useMemo(() => {
+    if (filters.maxPrice !== undefined && filters.maxPrice >= min && filters.maxPrice <= max) {
+      return filters.maxPrice;
+    }
+    return max;
+  }, [min, max, filters.maxPrice]);
+
+  // рефы для отслеживания предыдущих значений (чтобы избежать лишних обновлений)
+  const prevMinRef = useRef<number | null>(null);
+  const prevMaxRef = useRef<number | null>(null);
 
   // текущие значения в инпутах (могут быть пустыми во время ввода)
-  const [localMinPrice, setLocalMinPrice] = useState<string>(() => String(prevMinPrice));
-  const [localMaxPrice, setLocalMaxPrice] = useState<string>(() => String(prevMaxPrice));
+  const [localMinPrice, setLocalMinPrice] = useState<string>(() => String(computedMinPrice));
+  const [localMaxPrice, setLocalMaxPrice] = useState<string>(() => String(computedMaxPrice));
+
+  // обновляем локальные состояния при изменении вычисляемых значений
+  // необходимая синхронизация с пропсами после загрузки данных
+  useEffect(() => {
+    if (prevMinRef.current === null || prevMinRef.current !== computedMinPrice) {
+      prevMinRef.current = computedMinPrice;
+      setTimeout(() => setLocalMinPrice(String(computedMinPrice)), 0);
+    }
+    if (prevMaxRef.current === null || prevMaxRef.current !== computedMaxPrice) {
+      prevMaxRef.current = computedMaxPrice;
+      setTimeout(() => setLocalMaxPrice(String(computedMaxPrice)), 0);
+    }
+  }, [computedMinPrice, computedMaxPrice]);
 
   // рефы для отслеживания фокуса
   const minInputRef = useRef<HTMLInputElement>(null);
@@ -62,8 +81,8 @@ const PriceRange: FC<PriceRangeProps> = ({ min, max }) => {
   }, [debouncedMinPrice, debouncedMaxPrice, dispatch, filters.minPrice, filters.maxPrice]);
 
   // вычисление позиции слайдера
-  const currentMin = localMinPrice === '' ? prevMinPrice : Number(localMinPrice);
-  const currentMax = localMaxPrice === '' ? prevMaxPrice : Number(localMaxPrice);
+  const currentMin = localMinPrice === '' ? computedMinPrice : Number(localMinPrice);
+  const currentMax = localMaxPrice === '' ? computedMaxPrice : Number(localMaxPrice);
   const minPercent = ((currentMin - min) / (max - min)) * 100;
   const maxPercent = ((currentMax - min) / (max - min)) * 100;
 
@@ -84,58 +103,52 @@ const PriceRange: FC<PriceRangeProps> = ({ min, max }) => {
 
   // восстановление предыдущего значения при потере фокуса (если инпут пустой)
   const handleMinBlur = useCallback(() => {
-    const value = localMinPrice === '' ? prevMinPrice : Number(localMinPrice);
+    const value = localMinPrice === '' ? computedMinPrice : Number(localMinPrice);
 
     if (isNaN(value) || value < min) {
-      setLocalMinPrice(String(prevMinPrice));
+      setLocalMinPrice(String(computedMinPrice));
     } else if (value > max) {
       setLocalMinPrice(String(max));
-      setPrevMinPrice(max);
     } else {
       // проверяем, что min <= max
-      const currentMaxVal = localMaxPrice === '' ? prevMaxPrice : Number(localMaxPrice);
+      const currentMaxVal = localMaxPrice === '' ? computedMaxPrice : Number(localMaxPrice);
       if (value > currentMaxVal) {
         // min не может быть больше max, восстанавливаем к предыдущему
-        setLocalMinPrice(String(prevMinPrice));
+        setLocalMinPrice(String(computedMinPrice));
       } else {
         setLocalMinPrice(String(value));
-        setPrevMinPrice(value);
       }
     }
-  }, [localMinPrice, localMaxPrice, prevMinPrice, prevMaxPrice, min, max]);
+  }, [localMinPrice, localMaxPrice, computedMinPrice, computedMaxPrice, min, max]);
 
   const handleMaxBlur = useCallback(() => {
-    const value = localMaxPrice === '' ? prevMaxPrice : Number(localMaxPrice);
+    const value = localMaxPrice === '' ? computedMaxPrice : Number(localMaxPrice);
 
     if (isNaN(value) || value > max) {
-      setLocalMaxPrice(String(prevMaxPrice));
+      setLocalMaxPrice(String(computedMaxPrice));
     } else if (value < min) {
       setLocalMaxPrice(String(min));
-      setPrevMaxPrice(min);
     } else {
       // проверяем, что max >= min
-      const currentMinVal = localMinPrice === '' ? prevMinPrice : Number(localMinPrice);
+      const currentMinVal = localMinPrice === '' ? computedMinPrice : Number(localMinPrice);
       if (value < currentMinVal) {
         // max не может быть меньше min, восстанавливаем к предыдущему
-        setLocalMaxPrice(String(prevMaxPrice));
+        setLocalMaxPrice(String(computedMaxPrice));
       } else {
         setLocalMaxPrice(String(value));
-        setPrevMaxPrice(value);
       }
     }
-  }, [localMinPrice, localMaxPrice, prevMinPrice, prevMaxPrice, min, max]);
+  }, [localMinPrice, localMaxPrice, computedMinPrice, computedMaxPrice, min, max]);
 
   // обработчики для слайдера
   const handleMinChange = (e: ChangeEvent<HTMLInputElement>) => {
     const value = Math.min(Number(e.target.value), currentMax);
     setLocalMinPrice(String(value));
-    setPrevMinPrice(value);
   };
 
   const handleMaxChange = (e: ChangeEvent<HTMLInputElement>) => {
     const value = Math.max(Number(e.target.value), currentMin);
     setLocalMaxPrice(String(value));
-    setPrevMaxPrice(value);
   };
 
   return (

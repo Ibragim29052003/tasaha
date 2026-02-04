@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef, type FC, type ChangeEvent } from 'react';
-import styles from './RangeFilter.module.scss';
+import { useState, useEffect, useRef, type FC, type ChangeEvent } from "react";
+import styles from "./RangeFilter.module.scss";
 
 interface RangeFilterProps {
   min: number;
@@ -14,7 +14,7 @@ const RangeFilter: FC<RangeFilterProps> = ({
   max,
   minValue,
   maxValue,
-  onChange
+  onChange,
 }) => {
   const [localMinVal, setLocalMinVal] = useState(minValue);
   const [localMaxVal, setLocalMaxVal] = useState(maxValue);
@@ -26,14 +26,14 @@ const RangeFilter: FC<RangeFilterProps> = ({
   useEffect(() => {
     if (minValue !== minValRef.current) {
       minValRef.current = minValue;
-      setLocalMinVal(minValue);
+      setTimeout(() => setLocalMinVal(minValue), 0);
     }
   }, [minValue]);
 
   useEffect(() => {
     if (maxValue !== maxValRef.current) {
       maxValRef.current = maxValue;
-      setLocalMaxVal(maxValue);
+      setTimeout(() => setLocalMaxVal(maxValue), 0);
     }
   }, [maxValue]);
 
@@ -41,7 +41,7 @@ const RangeFilter: FC<RangeFilterProps> = ({
   useEffect(() => {
     const minPercent = ((localMinVal - min) / (max - min)) * 100;
     const maxPercent = ((localMaxVal - min) / (max - min)) * 100;
-    
+
     if (range.current) {
       range.current.style.left = `${minPercent}%`;
       range.current.style.width = `${maxPercent - minPercent}%`;
@@ -63,26 +63,28 @@ const RangeFilter: FC<RangeFilterProps> = ({
   };
 
   return (
-    <div className={styles.rangeContainer}>
-      <div className={styles.inputsContainer}>
+    <div className={styles.range}>
+      <div className={styles.range__inputs}>
         <input
           type="number"
           value={localMinVal}
           onChange={handleMinChange}
-          className={styles.minInput}
+          className={styles.range__input}
           min={min}
           max={max}
+          aria-label="Минимальное значение"
         />
         <input
           type="number"
           value={localMaxVal}
           onChange={handleMaxChange}
-          className={styles.maxInput}
+          className={styles.range__input}
           min={min}
           max={max}
+          aria-label="Максимальное значение"
         />
       </div>
-      
+
       <div className={styles.sliderContainer}>
         <input
           type="range"
@@ -90,7 +92,8 @@ const RangeFilter: FC<RangeFilterProps> = ({
           max={max}
           value={localMinVal}
           onChange={handleMinChange}
-          className={`${styles.thumb} ${styles.thumbLeft}`}
+          className={`${styles.range__thumb} ${styles["range__thumb--left"]}`}
+          aria-label="Минимальное значение диапазона"
         />
         <input
           type="range"
@@ -98,12 +101,12 @@ const RangeFilter: FC<RangeFilterProps> = ({
           max={max}
           value={localMaxVal}
           onChange={handleMaxChange}
-          className={`${styles.thumb} ${styles.thumbRight}`}
+          className={`${styles.range__thumb} ${styles["range__thumb--right"]}`}
+          aria-label="Максимальное значение диапазона"
         />
-        
-        <div className={styles.slider}>
-          <div ref={range} className={styles.range}></div>
-          <div className={styles.track}></div>
+
+        <div className={styles.range__track}>
+          <div ref={range} className={styles.range__range} />
         </div>
       </div>
     </div>
