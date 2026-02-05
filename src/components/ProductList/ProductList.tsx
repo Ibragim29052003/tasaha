@@ -95,6 +95,7 @@ const ProductList: FC<ProductListProps> = ({
         ref={cardsRef}
         visibleProducts={visibleProducts}
         isFilterVisible={isFilterVisible}
+        loading={loading}
       />
 
       {showPagination && (

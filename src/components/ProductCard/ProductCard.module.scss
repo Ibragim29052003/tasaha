@@ -25,6 +25,7 @@
     position: relative;
     background: var(--color-extra-light-gray);
     overflow: hidden;
+    aspect-ratio: 3 / 4;
   }
 
   &__image {
@@ -33,7 +34,6 @@
     object-fit: cover;
     transition: transform 0.35s ease;
   }
-
 
   &:hover &__image {
     transform: scale(1.07);
@@ -94,7 +94,6 @@
     margin: 0;
 
     display: -webkit-box;
-    -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
     min-height: rem(40);
@@ -117,5 +116,23 @@
     &__title {
       font-size: rem(14);
     }
+  }
+
+  &__imageSkeleton {
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
+  }
+
+  &__titleSkeleton {
+    height: rem(16);
+    width: 90%;
+    border-radius: rem(4);
+  }
+
+  &__priceSkeleton {
+    height: rem(18);
+    width: 45%;
+    border-radius: rem(4);
   }
 }

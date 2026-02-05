@@ -3,6 +3,16 @@ import { createApi } from "@reduxjs/toolkit/query/react";
 import { client, urlFor, type SanityImage } from "./sanityClient";
 import type { Slide } from "@/redux/slider/types";
 
+type BaseProduct = {
+  _id: string;
+  title: string;
+  image: SanityImage | null;
+  price: number;
+  oldPrice?: number;
+  category: string;
+  active: boolean;
+};
+
 // типы для разных схем
 // тип для конфига фильтров
 type FilterConfig = {
@@ -13,27 +23,13 @@ type FilterConfig = {
 };
 
 // тип для продукта слайдера
-type SliderProduct = {
-  _id: string;
-  title: string;
+type SliderProduct = BaseProduct & {
   description: string;
-  image: SanityImage | null;
-  price: number;
-  oldPrice?: number;
   wbLink: string;
-  active: boolean;
-  category: string; 
 };
 
 // тип для продукта каталога
-type CatalogProduct = {
-  _id: string;
-  title: string;
-  image: SanityImage | null;
-  price: number;
-  oldPrice?: number;
-  active: boolean;
-  category: string;
+type CatalogProduct = BaseProduct & {
   fabrics?: string[];
   sizes?: string[];
   colors?: string[];
@@ -41,21 +37,14 @@ type CatalogProduct = {
 };
 
 // тип для детальной страницы товара
-type DetailProduct = {
-  _id: string;
-  title: string;
+type DetailProduct = BaseProduct & {
   shortDescription?: string;
   fullDescription?: string;
-  image: SanityImage | null;
   gallery?: SanityImage[];
   videoUrl?: string;
   videoThumbnail?: SanityImage;
-  price: number;
-  oldPrice?: number;
   sizes?: string[];
   wbLink: string;
-  active: boolean;
-  category: string; 
 };
 
 // тип фильтров для каталога
@@ -131,7 +120,10 @@ export const productsApi = createApi({
 
     // получение отфильтрованных продуктов для каталога
     // используем тип catalogProduct для получения данных
-    getFilteredProducts: builder.query<Omit<Slide, "description" | "link">[], Filters>({
+    getFilteredProducts: builder.query<
+      Omit<Slide, "description" | "link">[],
+      Filters
+    >({
       queryFn: async (filters) => {
         try {
           // запрашиваем продукты типа catalogProduct
@@ -196,30 +188,28 @@ export const productsApi = createApi({
           }
 
           // выполняем запрос к sanity
-          const sanityProducts: CatalogProduct[] = await client.fetch(
-            query,
-            {
-              category: filters.category,
-              minPrice: filters.minPrice,
-              maxPrice: filters.maxPrice,
-              fabricsLower: filters.fabrics?.map(f => f.toLowerCase()),
-              sizesLower: filters.sizes?.map(s => s.toLowerCase()),
-              colorsLower: filters.colors?.map(c => c.toLowerCase()),
-              isNew: filters.isNew,
-            }
-          );
+          const sanityProducts: CatalogProduct[] = await client.fetch(query, {
+            category: filters.category,
+            minPrice: filters.minPrice,
+            maxPrice: filters.maxPrice,
+            fabricsLower: filters.fabrics?.map((f) => f.toLowerCase()),
+            sizesLower: filters.sizes?.map((s) => s.toLowerCase()),
+            colorsLower: filters.colors?.map((c) => c.toLowerCase()),
+            isNew: filters.isNew,
+          });
 
           // преобразуем данные в формат карточек товаров
           // карточки используются в каталоге товаров
-          const products: Omit<Slide, "description" | "link">[] = sanityProducts.map((product) => {
-            return {
-              id: product._id,
-              title: product.title,
-              imageUrl: urlFor(product.image) || "",
-              newPrice: product.price,
-              oldPrice: product.oldPrice,
-            };
-          });
+          const products: Omit<Slide, "description" | "link">[] =
+            sanityProducts.map((product) => {
+              return {
+                id: product._id,
+                title: product.title,
+                imageUrl: urlFor(product.image) || "",
+                newPrice: product.price,
+                oldPrice: product.oldPrice,
+              };
+            });
 
           // возвращаем отфильтрованные продукты
           // данные будут использоваться в каталоге с фильтрами
@@ -237,14 +227,27 @@ export const productsApi = createApi({
 
     // получение конфигов фильтров
     // получаем настройки фильтров для каждой категории
-    getFilterConfigs: builder.query<{ [key: string]: { fabrics: string[], colors: string[], sizes: string[] } }, void>({
+    getFilterConfigs: builder.query<
+      {
+        [key: string]: { fabrics: string[]; colors: string[]; sizes: string[] };
+      },
+      void
+    >({
       queryFn: async () => {
         try {
           // запрашиваем все конфиги фильтров
-          const configs: FilterConfig[] = await client.fetch(`*[_type == "filterConfig"]{ category, fabrics, colors, sizes }`);
+          const configs: FilterConfig[] = await client.fetch(
+            `*[_type == "filterConfig"]{ category, fabrics, colors, sizes }`
+          );
 
           // преобразуем в объект с категориями как ключами
-          const result: { [key: string]: { fabrics: string[], colors: string[], sizes: string[] } } = {};
+          const result: {
+            [key: string]: {
+              fabrics: string[];
+              colors: string[];
+              sizes: string[];
+            };
+          } = {};
           configs.forEach((config: FilterConfig) => {
             result[config.category] = {
               fabrics: config.fabrics || [],
@@ -266,14 +269,17 @@ export const productsApi = createApi({
       },
     }),
 
-    getFilterCounts: builder.query<{
-      fabrics: Record<string, number>;
-      colors: Record<string, number>;
-      sizes: Record<string, number>;
-    }, {
-      category: string;
-      filters: Filters;
-    }>({
+    getFilterCounts: builder.query<
+      {
+        fabrics: Record<string, number>;
+        colors: Record<string, number>;
+        sizes: Record<string, number>;
+      },
+      {
+        category: string;
+        filters: Filters;
+      }
+    >({
       queryFn: async ({ category, filters }) => {
         try {
           let query = `*[_type == "catalogProduct" && active == true && category == $category`;
@@ -304,42 +310,48 @@ export const productsApi = createApi({
             minPrice: filters.minPrice,
             maxPrice: filters.maxPrice,
             isNew: filters.isNew,
-            fabricsLower: filters.fabrics?.map(f => f.toLowerCase()),
-            sizesLower: filters.sizes?.map(s => s.toLowerCase()),
-            colorsLower: filters.colors?.map(c => c.toLowerCase()),
+            fabricsLower: filters.fabrics?.map((f) => f.toLowerCase()),
+            sizesLower: filters.sizes?.map((s) => s.toLowerCase()),
+            colorsLower: filters.colors?.map((c) => c.toLowerCase()),
           });
 
           const fabricCounts: Record<string, number> = {};
           const colorCounts: Record<string, number> = {};
           const sizeCounts: Record<string, number> = {};
 
-          products.forEach((product: { fabrics?: string[]; colors?: string[]; sizes?: string[] }) => {
-            if (product.fabrics && Array.isArray(product.fabrics)) {
-              product.fabrics.forEach((fabric: string) => {
-                const key = fabric.toLowerCase();
-                fabricCounts[key] = (fabricCounts[key] || 0) + 1;
-              });
+          products.forEach(
+            (product: {
+              fabrics?: string[];
+              colors?: string[];
+              sizes?: string[];
+            }) => {
+              if (product.fabrics && Array.isArray(product.fabrics)) {
+                product.fabrics.forEach((fabric: string) => {
+                  const key = fabric.toLowerCase();
+                  fabricCounts[key] = (fabricCounts[key] || 0) + 1;
+                });
+              }
+              if (product.colors && Array.isArray(product.colors)) {
+                product.colors.forEach((color: string) => {
+                  const key = color.toLowerCase();
+                  colorCounts[key] = (colorCounts[key] || 0) + 1;
+                });
+              }
+              if (product.sizes && Array.isArray(product.sizes)) {
+                product.sizes.forEach((size: string) => {
+                  const key = size.toLowerCase();
+                  sizeCounts[key] = (sizeCounts[key] || 0) + 1;
+                });
+              }
             }
-            if (product.colors && Array.isArray(product.colors)) {
-              product.colors.forEach((color: string) => {
-                const key = color.toLowerCase();
-                colorCounts[key] = (colorCounts[key] || 0) + 1;
-              });
-            }
-            if (product.sizes && Array.isArray(product.sizes)) {
-              product.sizes.forEach((size: string) => {
-                const key = size.toLowerCase();
-                sizeCounts[key] = (sizeCounts[key] || 0) + 1;
-              });
-            }
-          });
+          );
 
           return {
             data: {
               fabrics: fabricCounts,
               colors: colorCounts,
-              sizes: sizeCounts
-            }
+              sizes: sizeCounts,
+            },
           };
         } catch (e) {
           return {
